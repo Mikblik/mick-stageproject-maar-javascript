@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultaten</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijlen zijn hetzelfde gebleven */
+        .nav-link.disabled {
+            background-color: #d1d5db;
+            color: #6b7280;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        input.error {
+            border: 2px solid #ef4444;
+            background-color: #fef2f2;
+        }
+        /* We voegen 'hidden' toe om elementen standaard te verbergen */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans p-6">
+
+    <div class="container mx-auto max-w-6xl">
+        <header class="flex justify-center space-x-4 mb-10">
+            <a href="index.html" id="nav-home" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
+                Home
+            </a>
+            <a href="#" id="nav-patient" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
+                een Patiënt
+            </a>
+            <a href="#" id="nav-all-patients" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
+                Alle patiënten
+            </a>
+        </header>
+
+
+        <div id="individuele-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
+            <h1 style="color:blue">Dit is de induv PATIËNTEN view</h1>
+            <div class="grid grid-cols-3 gap-8">
+        
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 indiv voorbeeld"
+                    data-description="informatie indiv dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        (Hier komt je figuur)
+                    </div>
+                </div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 2</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 3</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 4</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 5</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 6</div>
+        
+            </div>
+        </div>
+
+        <div id="alle-patienten-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
+            <h1 style="color:blue">Dit is de ALLE PATIËNTEN view </h1>
+            <div class="grid grid-cols-3 gap-8">
+        
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        (Hier komt je figuur)
+                    </div>
+                </div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 2 voorbeeld"
+                    data-description="informatie 2 dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        (Hier komt je figuur)
+                    </div>
+                </div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 3</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 4</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 5</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 6</div>
+        
+            </div>
+        </div>
+
+        <div id="info-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white w-full max-w-2xl rounded-lg shadow-xl p-6 relative">
+                <button id="modal-close-button" class="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 font-bold">
+                    X
+                </button>
+                
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h2>
+                <p id="modal-content" class="text-gray-600"></p>
+            </div>
+        </div>
+
+    </div> <script src="resultaten.js" defer></script>
+
+</body>
+</html>

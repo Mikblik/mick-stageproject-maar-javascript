@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RA Traject Voorspeller (JS Editie)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stijlen zijn hetzelfde gebleven */
+        .nav-link.disabled {
+            background-color: #d1d5db;
+            color: #6b7280;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        input.error {
+            border: 2px solid #ef4444;
+            background-color: #fef2f2;
+        }
+        /* We voegen 'hidden' toe om elementen standaard te verbergen */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-6">
+
+    <div class="container mx-auto max-w-6xl">
+
+        <header class="flex justify-center space-x-4 mb-10">
+            <a href="#" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
+                Home
+            </a>
+            <a href="#" id="nav-patient" class="nav-link text-xl font-bold py-2 px-8 rounded-full shadow-lg disabled">
+                een Patiënt
+            </a>
+            <a href="#" id="nav-all-patients" class="nav-link text-xl font-bold py-2 px-8 rounded-full shadow-lg disabled">
+                Alle patiënten
+            </a>
+        </header>
+
+        <div class="flex items-start justify-center space-x-8">
+
+            <div class="w-1/2 bg-blue-800 p-6 rounded-lg shadow-xl text-white">
+                <h2 class="text-2xl font-semibold text-center mb-4">Upload een CSV bestand</h2>
+
+                <form id="csv-form">
+                    <div class="bg-blue-900 p-4 rounded-md">
+                        <label for="csv_file" class="block text-lg font-medium mb-4">Upload hier je CSV bestand</label>
+                        <input type="file" name="csv_file" id="csv_file"
+                               class="block w-full text-sm text-gray-300
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-full file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-blue-50 file:text-blue-700
+                                      hover:file:bg-blue-100"
+                               required>
+                    </div>
+
+                    <div id="csv-error-box" class="bg-red-800 border border-red-400 p-4 rounded-md mt-4 hidden">
+                        <h3 class="text-xl font-bold text-red-400 mb-2">ERROR!</h3>
+                        <p id="csv-error-message" class="text-sm text-white"></p>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-md transition duration-200">
+                        Verwerk CSV
+                    </button>
+                </form>
+            </div>
+
+            <div class="text-gray-500 text-xl font-bold pt-20">
+                Of
+            </div>
+
+            <div class="w-1/2 bg-blue-800 p-6 rounded-lg shadow-xl text-white">
+                <h2 class="text-2xl font-semibold text-center mb-4">Vul een individuele patiënt in</h2>
+
+                <form id="single-patient-form">
+                    <div class="grid grid-cols-1 gap-y-3">
+
+                        <div>
+                            <input type="text" value="test" id="patient_id" name="patient_id" placeholder="Vul hier de Patiënt naam in"
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-patient_id" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="visit" name="visit" placeholder="Vul hier Patiënt visite in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-visit" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="TJC" name="TJC" placeholder="Vul hier TJC28 in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-TJC" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="SJC" name="SJC" placeholder="Vul hier SJC28 in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-SJC" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="ESR" name="ESR" placeholder="Vul hier ESR in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-ESR" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="Leukocytes" name="Leukocytes" placeholder="Vul hier Leukocyten in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-Leukocytes" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="HB" name="HB" placeholder="Vul hier HB (adj) in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-HB" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+                        <div>
+                            <input type="text" value=4 id="Thrombocytes" name="Thrombocytes" placeholder="Vul hier Trombocyten in."
+                                   class="w-full p-3 rounded-md text-gray-800 shadow-inner">
+                            <p id="error-Thrombocytes" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
+                        </div>
+
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-md transition duration-200">
+                        Verwerk Patiënt
+                    </button>
+                </form>
+            </div>
+
+
+        </div> </div> 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+        <script src="app.js" defer></script>
+
+</body>
+</html>
