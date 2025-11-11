@@ -164,33 +164,40 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    // 5. Valideer de data (numeriek en geen nulls)
-                    let gevalideerdeData = [];
-                    for (let i = 0; i < data.length; i++) {
-                        const rij = data[i];
-                        
-                        // Check numerieke kolommen (zoals 'pd.to_numeric')
-                        for (const colName of NUMERIEKE_KOLOMMEN_CSV) {
-                            const waarde = rij[colName];
-                            if (waarde === null || waarde === undefined || waarde === "") {
-                                showCsvError(`Rij ${i + 2} heeft een lege waarde in kolom '${colName}'.`);
-                                return;
-                            }
-                            if (isNaN(parseFloat(waarde))) {
-                                showCsvError(`Rij ${i + 2}, kolom '${colName}' bevat een ongeldige waarde. Zorg dat dit alleen getallen zijn.`);
-                                return;
-                            }
-                        }
+                    // 5. Valideer en Hernoem in één keer
+    let gevalideerdeData = [];
+    for (let i = 0; i < data.length; i++) {
+        const rij = data[i]; // De 'lelijke' rij uit de CSV
+        
+        // --- STAP 1: HERNOEM DE RIJ (Jouw loop) ---
+        // Bouw EERST de 'schone' rij
+        let nieuweRij = {};
+        for (const key in KOLOM_MAPPING) {
+            nieuweRij[KOLOM_MAPPING[key]] = rij[key];
+        }
 
-                        // Hernoem de kolommen (zoals 'df.rename(columns=KOLOM_MAPPING)')
-                        let nieuweRij = {};
-                        for (const key in KOLOM_MAPPING) {
-                            nieuweRij[KOLOM_MAPPING[key]] = rij[key];
-                        }
-                        gevalideerdeData.push(nieuweRij);
-                    }
+        // --- STAP 2: VALIDEER NU DE 'SCHONE' RIJ ---
+        // Gebruik je 'schone' lijst met namen! (INDIVIDUELE_NUMERIEKE_VELDEN)
+        for (const colName of INDIVIDUELE_NUMERIEKE_VELDEN) { 
+            
+            // We valideren nu de 'nieuweRij', niet de 'rij'
+            const waarde = nieuweRij[colName]; 
+            
+            if (waarde === null || waarde === undefined || waarde === "") {
+                showCsvError(`Rij ${i + 2} heeft een lege waarde in kolom '${colName}'.`);
+                return;
+            }
+            if (isNaN(parseFloat(waarde))) {
+                showCsvError(`Rij ${i + 2}, kolom '${colName}' bevat een ongeldige waarde.`);
+                return;
+            }
+        }
+    
+        // --- STAP 3: OPSLAAN ---
+        // De 'nieuweRij' is goedgekeurd én al hernoemd.
+        gevalideerdeData.push(nieuweRij);
+    }
 
-                    // 6. SUCCES! Sla data op en ga verder
                     console.log("CSV Validatie succesvol!", gevalideerdeData);
                     
                     // Sla op in sessie (vervangt 'request.session[...]')
@@ -327,5 +334,5 @@ document.addEventListener('DOMContentLoaded', () => {
         csvErrorMessage.innerText = message;
         csvErrorBox.classList.remove('hidden');
     }
-    
+
 });
