@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DEEL 3: ELEMENTEN "VANGEN" ---
     // We zoeken alle HTML-elementen die we nodig hebben één keer op
+
+    // 1. "Vang" de knop en de dropdown
+    const settingsKnop = document.getElementById('settings-knop');
+    const settingsDropdown = document.getElementById('settings-dropdown');
+
+    let geselecteerdeModel = 'auto';
+
+    const modelOptieAuto = document.getElementById('model-auto');
+    const modelOptieBaseline = document.getElementById('model-baseline');
+    const modelOptieTraject = document.getElementById('model-traject');
     
     // Formulieren
     const csvForm = document.getElementById('csv-form');
@@ -70,7 +80,33 @@ document.addEventListener('DOMContentLoaded', () => {
         singlePatientForm.addEventListener('submit', handleSinglePatientSubmit);
     }
 
-    // Check of er al data in de sessie zit (bv. na een redirect)
+    // Een functie die checkt of data al geladen is
+    function checkSessionData() {
+        // Check of de "data_loaded" sleutel bestaat in de rugzak
+        if (sessionStorage.getItem('data_loaded') === 'true') {
+            
+            console.log("Data is al geladen in deze sessie. Knoppen worden geactiveerd.");
+            
+            // 1. Verwijder de 'disabled' class (dit deed je al)
+            navPatient.classList.remove('disabled');
+            navAllPatients.classList.remove('disabled');
+
+            // 2. VOEG DE LINK-LOGICA TOE (NIEUW!)
+            // We willen niet dat de 'href="#"' wordt gebruikt.
+            navPatient.addEventListener('click', (event) => {
+                event.preventDefault(); // Stop de '#' link
+                // Stuur de gebruiker direct naar de resultaten
+                window.location.href = 'resultaten.html';
+            });
+            
+            navAllPatients.addEventListener('click', (event) => {
+                event.preventDefault(); // Stop de '#' link
+                // Stuur de gebruiker direct naar de resultaten
+                window.location.href = 'resultaten.html';
+            });
+        }
+    }
+
     checkSessionData();
 
 
@@ -160,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Sla op in sessie (vervangt 'request.session[...]')
                     sessionStorage.setItem('patient_data_json', JSON.stringify(gevalideerdeData));
                     sessionStorage.setItem('data_loaded', 'true');
+                    sessionStorage.setItem('model_voorkeur', geselecteerdeModel);
                     
                     // Stuur door naar de 'alle patiënten' pagina (vervangt 'redirect()')
                     window.location.href = 'resultaten.html'; // Zorg dat deze pagina bestaat!
@@ -235,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sla het op in de 'sessie' van de browser (vervangt 'request.session')
         sessionStorage.setItem('patient_data_json', dataToStore);
         sessionStorage.setItem('data_loaded', 'true');
+        sessionStorage.setItem('model_voorkeur', geselecteerdeModel);
 
         // Stuur de gebruiker door (vervangt 'redirect')
         window.location.href = 'resultaten.html'; // Zorg dat deze pagina bestaat!
@@ -243,19 +281,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DEEL 7: HELPER FUNCTIES ---
 
+    // Koppel een 'click' listener aan de knop
+    settingsKnop.addEventListener('click', (event) => {
+        // Stop de klik, zodat de 'window' listener hieronder 'm niet vangt
+        event.stopPropagation(); 
+        
+        // De "lichtschakelaar":
+        // Als 'hidden' erop staat, haalt hij 'm weg.
+        // Als 'hidden' er niet op staat, voegt hij 'm toe.
+        settingsDropdown.classList.toggle('hidden');
+    });
+
+    // Sluit de dropdown als je ergens anders klikt
+    window.addEventListener('click', () => {
+        // Als de dropdown *niet* verborgen is...
+        if (!settingsDropdown.classList.contains('hidden')) {
+            // ...verberg 'm dan.
+            settingsDropdown.classList.add('hidden');
+        }
+    });
+
+    modelOptieAuto.addEventListener('click', (event) => {
+        event.preventDefault(); // Stop de <a> link
+        geselecteerdeModel = 'auto'; // Update het "geheugen"
+        console.log("Modelkeuze is nu:", geselecteerdeModel);
+        settingsDropdown.classList.add('hidden'); // Sluit de dropdown
+    });
+
+    modelOptieBaseline.addEventListener('click', (event) => {
+        event.preventDefault();
+        geselecteerdeModel = 'baseline'; // Update het "geheugen"
+        console.log("Modelkeuze is nu:", geselecteerdeModel);
+        settingsDropdown.classList.add('hidden');
+    });
+
+    modelOptieTraject.addEventListener('click', (event) => {
+        event.preventDefault();
+        geselecteerdeModel = 'traject'; // Update het "geheugen"
+        console.log("Modelkeuze is nu:", geselecteerdeModel);
+        settingsDropdown.classList.add('hidden');
+    });
+
     // Een simpele functie om CSV-fouten te tonen
     function showCsvError(message) {
         csvErrorMessage.innerText = message;
         csvErrorBox.classList.remove('hidden');
     }
-
-    // Een functie die checkt of data al geladen is
-    // Dit vervangt 'context['data_loaded'] = request.session.get(...)'
-    function checkSessionData() {
-        if (sessionStorage.getItem('data_loaded') === 'true') {
-            console.log("Data is al geladen in deze sessie.");
-            navPatient.classList.remove('disabled');
-            navAllPatients.classList.remove('disabled');
-        }
-    }
+    
 });
