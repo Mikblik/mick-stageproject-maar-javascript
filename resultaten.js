@@ -42,11 +42,43 @@ document.addEventListener('DOMContentLoaded', () => {
         allePatientenView.classList.remove('hidden');
     }
 
-
+    
     /*
     Voordat je zelf inputs kan geven door te klikken op knoppen moeten eerst hierzo de
     modellen geladen/uitgevoerd worden.!
     */
+   // MODEL 1 ZIEKTESTADIUM TOEWIJZEN
+for (const waarde of patientenLijst) {
+    // 1. Berekenen
+    const resultaten = {
+        L1: (Number(waarde.TJC) * -0.839) + (Number(waarde.SJC) * -1.138) + (Number(waarde.ESR) * -0.283) + (Number(waarde.Leukocytes) * -0.742) + (Number(waarde.HB) * 0.637) + (1 * 0.152) + (Number(waarde.Thrombocytes) * -0.009),
+        L2: (Number(waarde.TJC) * -0.648) + (Number(waarde.SJC) * -0.755) + (Number(waarde.ESR) * 0.175) + (Number(waarde.Leukocytes) * -0.04) + (Number(waarde.HB) * 0.259) + (1 * 0.003) + (Number(waarde.Thrombocytes) * 0.001),
+        L3: (Number(waarde.TJC) * -0.58) + (Number(waarde.SJC) * -0.795) + (Number(waarde.ESR) * -0.203) + (Number(waarde.Leukocytes) * 1.414) + (Number(waarde.HB) * -0.117) + (1 * -0.02) + (Number(waarde.Thrombocytes) * 0.003),
+        L4: (Number(waarde.TJC) * 0.658) + (Number(waarde.SJC) * 0.326) + (Number(waarde.ESR) * -0.211) + (Number(waarde.Leukocytes) * -0.224) + (Number(waarde.HB) * 0.54) + (1 * 0.047) + (Number(waarde.Thrombocytes) * -0.004),
+        L5: (Number(waarde.TJC) * 0.319) + (Number(waarde.SJC) * 0.545) + (Number(waarde.ESR) * 0.111) + (Number(waarde.Leukocytes) * 0.094) + (Number(waarde.HB) * 0.214) + (1 * -0.049) + (Number(waarde.Thrombocytes) * 0.003),
+        L6: (Number(waarde.TJC) * -0.17) + (Number(waarde.SJC) * -0.018) + (Number(waarde.ESR) * 0.486) + (Number(waarde.Leukocytes) * 0.174) + (Number(waarde.HB) * -0.437) + (1 * -0.204) + (Number(waarde.Thrombocytes) * 0.012),
+        L7: (Number(waarde.TJC) * 1.034) + (Number(waarde.SJC) * 1.743) + (Number(waarde.ESR) * -0.006) + (Number(waarde.Leukocytes) * 0.136) + (Number(waarde.HB) * -0.08) + (1 * -0.105) + (Number(waarde.Thrombocytes) * -0.003),
+        L8: (Number(waarde.TJC) * 0.226) + (Number(waarde.SJC) * 0.092) + (Number(waarde.ESR) * -0.07) + (Number(waarde.Leukocytes) * -0.811) + (Number(waarde.HB) * -1.016) + (1 * 0.176) + (Number(waarde.Thrombocytes) * -0.002)
+    };
+
+    // 2. Hoogste bepalen
+    const [hoogsteID, hoogsteWaarde] = Object.entries(resultaten).reduce((max, current) => current[1] > max[1] ? current : max);
+
+    // 3. Printen
+    console.log(`De winnaar is ${hoogsteID} met score ${hoogsteWaarde}`);
+
+    // 4. ziektestadium toevoegen aan de main dictionary :D
+    waarde.ziektestadium = hoogsteID;
+
+    // EINDE MODEL 1 ZIEKTESTADIUM TOEWIJZEN
+
+    // START MODEL 2
+
+}
+
+console.log("Patientenlijst met resultaten:", patientenLijst);
+
+
 
     // --- 2. LUISTER NAAR KLIKKEN ---
 
