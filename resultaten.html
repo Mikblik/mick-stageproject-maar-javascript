@@ -42,6 +42,12 @@
 
         <div id="individuele-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
             <h1 style="color:blue">Dit is de induv PATIËNTEN view</h1>
+
+            <div>
+                <input type="text" id="DePatiënt" placeholder="Vul hier de patiënt naam in">
+                <button id="verstuurKnop">Verstuur</button>
+            </div>
+
             <div class="grid grid-cols-3 gap-8">
         
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
@@ -50,8 +56,8 @@
                     data-description="informatie indiv dingen">
                         i
                     </button>
-                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        (Hier komt je figuur)
+                    <div class="bg-white text-black rounded h-48">
+                        <canvas id="Tijdlijn"></canvas>
                     </div>
                 </div>
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 2</div>
@@ -74,7 +80,7 @@
                         i
                     </button>
                     <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        (Hier komt je figuur)
+                        (Hier figuur !!! :D)
                     </div>
                 </div>
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
@@ -84,7 +90,7 @@
                         i
                     </button>
                     <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        (Hier komt je figuur)
+                        (Hier figuur!!?!??@@??!?@)
                     </div>
                 </div>
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 3</div>
@@ -106,7 +112,10 @@
             </div>
         </div>
 
-    </div> <script src="resultaten.js" defer></script>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="grafieken.js"></script>
+    <script src="resultaten.js" defer></script>
 
 </body>
 </html>
