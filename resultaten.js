@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const patientinputveld = document.getElementById("DePatiënt");
     const patkiezenknop = document.getElementById('verstuurKnop');
 
+    const featureselected = document.getElementById('feature-select')
+
     // KIJKT HOEVEEL DATA JE HEBT 1 patient of meerdere?? en opent de juiste start pagina>!>!
     if (patientenLijst.length === 1) {
         individueleView.classList.remove('hidden');
@@ -80,21 +82,47 @@ for (const waarde of patientenLijst) {
     // 4. ziektestadium toevoegen aan de main dictionary :D
     waarde.ziektestadium = hoogsteID;
 
-    // START MODEL 2
-    // NOG NIKS HIER ):
+//---------------------------------------------------------MODEL 2 HIER DUS
+    // START BASELINE PREDICTIE MODEL 2 #NU NOG PLACEHOLDER WAARDES LET OP!
+    const resultatenbaseline = {
+        TR1: (Number(waarde.TJC) * 0.777) + (Number(waarde.SJC) * -1.032),
+
+        TR2: (Number(waarde.TJC) * 0.595) + (Number(waarde.SJC) * -0.699),
+
+        TR3: (Number(waarde.TJC) * 0.597) + (Number(waarde.SJC) * -0.808),
+
+        TR4: (Number(waarde.TJC) * 0.619) + (Number(waarde.SJC) * -0.359),
+    };
+
+    console.log("DIT IS RESULTATENBASELINE OUTPUT:", resultatenbaseline)
+
+    const [hoogsteIDBASE, hoogsteWaardeBASE] = Object.entries(resultatenbaseline).reduce((max, current) => current[1] > max[1] ? current : max);
+
+    console.log(`De winnaar is ${hoogsteIDBASE} met score ${hoogsteWaardeBASE}`);
+
+    waarde.ziektetraject = hoogsteIDBASE;
 }
 // FILTER DE GEKOZEN PATIENT EN ROEP GRAFIEK / TABEL FUNCTIES AAN :D
+console.log("HIERZO", patientenLijst)
 
 
-
+    let gekozenpatientlijst = [];
     // LUISTER NAAR KLIKKEN
 
     // DE KNOP VOOR INDIVIDU PATIENT VERSTUREN
     patkiezenknop.addEventListener('click', () => {
         const gekozenpatient = patientinputveld.value.trim();
-        let gekozenpatientlijst = patientenLijst.filter(p => p.patient_id.trim() === gekozenpatient);
+        gekozenpatientlijst = patientenLijst.filter(p => p.patient_id.trim() === gekozenpatient);
+        console.log("Dit is de gekozen patient:" + gekozenpatient);
+        console.log(gekozenpatientlijst)
 
         maakTijdlijnGrafiek(gekozenpatientlijst);
+        maakfeaturetijdlijn(gekozenpatientlijst, featureselected.value);
+    });
+
+    featureselected.addEventListener('change', () => {
+        console.log("gekozen feature:" + featureselected.value)
+        maakfeaturetijdlijn(gekozenpatientlijst, featureselected.value);
     });
 
     navHomeKnop.addEventListener('click', (event) => {

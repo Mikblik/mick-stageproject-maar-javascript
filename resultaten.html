@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultaten</title>
+    <title>RA Traject Voorspeller Resultaten</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Stijlen zijn hetzelfde gebleven */
@@ -60,7 +60,31 @@
                         <canvas id="Tijdlijn"></canvas>
                     </div>
                 </div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 2</div>
+                
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 2 indiv voorbeeld"
+                    data-description="informatie 2 indiv dingen">
+                        i
+                    </button>
+
+                    <label for="feature-select" class="block text-sm font-medium text-white mb-1">
+                        Kies een feature:
+                    </label>
+                    <select id="feature-select" class="w-full p-2 rounded text-black mb-4">
+                        <option value="ESR">ESR</option>
+                        <option value="TJC">TJC</option>
+                        <option value="SJC">SJC</option>
+                        <option value="Leukocytes">Leukocytes</option>
+                        <option value="HB">HB</option>
+                        <option value="Thrombocytes">Thrombocytes</option>
+                    </select>
+
+                    <div class="bg-white text-black rounded h-48">
+                        <canvas id="FeatureTijdlijn"></canvas>
+                    </div>
+                </div>
+
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 3</div>
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 4</div>
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 5</div>
