@@ -65,6 +65,7 @@ function baselinemodel(patientenLijst) {
 
     for (const waarde of patientenLijst) {
         const visitNummer = Number(waarde.visit);
+        // random Placeholder waardes Dus nog veranderen later
         if (visitNummer === 1) {            
             const resultatenbaseline = {
                 TR1: (Number(waarde.TJC) * 0.777) + (Number(waarde.SJC) * -1.032),

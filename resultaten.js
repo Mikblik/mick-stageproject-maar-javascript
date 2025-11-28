@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // MODEL 1 ZIEKTESTADIUM TOEWIJZEN
     ziektestadiamodel(patientenLijst)
 
-   voegVisiteTellersToe(patientenLijst)
+    voegVisiteTellersToe(patientenLijst)
 
     // KIEZEN WELK MODEL/PIPELINE/BEIDE GERUND GAAT WORDEN
     let modelVoorkeur = sessionStorage.getItem('model_voorkeur');

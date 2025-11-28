@@ -17,7 +17,7 @@
             border: 2px solid #ef4444;
             background-color: #fef2f2;
         }
-        /* We voegen 'hidden' toe om elementen standaard te verbergen */
+        /* We voegen 'hidden' toe om elementen standaard te verbergen */ 
         .hidden {
             display: none;
         }
@@ -39,17 +39,14 @@
             </a>
         </header>
 
-
         <div id="individuele-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
-            <h1 style="color:blue">Dit is de induv PATIËNTEN view</h1>
-
             <div>
                 <input type="text" id="DePatiënt" placeholder="Vul hier de patiënt naam in">
                 <button id="verstuurKnop">Verstuur</button>
             </div>
 
             <div class="grid grid-cols-3 gap-8">
-        
+
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                     data-title="figuur 1 indiv voorbeeld"
@@ -85,16 +82,98 @@
                     </div>
                 </div>
 
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 3</div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 4</div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 5</div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 6</div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *graph projection 1 patiënt gemarkeerd op referentie*
+                    </div>
+                </div>
+                
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *ziektestadia + features op tijdlijn grafiek*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *1 patiënt op clustering figuur*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *heatmap 1 patiënt vs referentie (ziektestadia)*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *heatmap 1 patiënt vs referentie (trajecten)*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *de kans van de gekozen stadia + traject staafdiagram*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *welke X aantal patienten lijken op mijn gekozen patiënt*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *ziektestadia + traject uitleg tabel*
+                    </div>
+                </div>
         
             </div>
         </div>
 
         <div id="alle-patienten-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
-            <h1 style="color:blue">Dit is de ALLE PATIËNTEN view </h1>
             <div class="grid grid-cols-3 gap-8">
         
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
@@ -104,9 +183,10 @@
                         i
                     </button>
                     <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        (Hier figuur !!! :D)
+                        *graph projection*
                     </div>
                 </div>
+
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                     data-title="figuur 2 voorbeeld"
@@ -114,13 +194,75 @@
                         i
                     </button>
                     <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        (Hier figuur!!?!??@@??!?@)
+                        *Heatmap clusters CSV vs referentie (ziektestadia)*
                     </div>
                 </div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 3</div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 4</div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 5</div>
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white">Box 6</div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *heatmap clusters CSV vs referentie (ziektetrajecten)*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *Clustering alle CSV patiënten*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *clustering alle CSV patienten op referentie*
+                    </div>
+                </div>
+                
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *gemmiddelde feature waardes tijdlijn met traject patiënten*
+                    </div>
+                </div>
+
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *shap figuur*
+                    </div>
+                </div>
+                
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                    data-title="figuur 1 voorbeeld"
+                    data-description="informatie dingen">
+                        i
+                    </button>
+                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
+                        *tabel voor ziektestadia + traject uitleg*
+                    </div>
+                </div>
         
             </div>
         </div>
