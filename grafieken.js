@@ -1,6 +1,7 @@
 // Deze variabele staat "buiten" de functie en onthoudt de grafiek
 
 let mijnComboGrafiek = null;
+let mijnKansenGrafiek = null;
 
 function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
 
@@ -94,3 +95,86 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
 
 
 
+function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
+    
+    // 1. Zoek de data voor de specifieke visite
+    // (Let op: visite in CSV is vaak string "1", dropdown is string "1", dus '==' is veilig)
+    const visiteData = patientData.find(p => p.visit == gekozenVisiteNummer);
+
+    if (!visiteData) {
+        console.warn("Geen data gevonden voor visite", gekozenVisiteNummer);
+        return;
+    }
+
+    // 2. Opruimen oude grafiek
+    if (mijnKansenGrafiek) {
+        mijnKansenGrafiek.destroy();
+    }
+
+    // 3. Bereid data voor op basis van Type (Stadium of Traject)
+    let labels = [];
+    let dataPercentages = [];
+    let kleur = '';
+    let labelNaam = '';
+
+    if (type === 'Stadium') {
+        // Check of we stadium kansen hebben (berekend in modellen.js)
+        if (visiteData.stadiumKansen) {
+            labels = Object.keys(visiteData.stadiumKansen).sort(); // L1, L2...
+            dataPercentages = labels.map(k => visiteData.stadiumKansen[k] * 100);
+            kleur = 'rgba(54, 162, 235, 0.8)'; // Blauw
+            labelNaam = 'Kans op Ziektestadium (%)';
+        }
+    } else if (type === 'Traject') {
+        // Check of we traject kansen hebben
+        if (visiteData.trajectKansen) {
+            labels = Object.keys(visiteData.trajectKansen).sort(); // TR1, TR2...
+            dataPercentages = labels.map(k => visiteData.trajectKansen[k] * 100);
+            kleur = 'rgba(75, 192, 192, 0.8)'; // Groen/Teal
+            labelNaam = 'Kans op Traject (%)';
+        }
+    }
+
+    // Als er geen data is (bv. traject model niet gerund), toon lege grafiek of niets
+    if (labels.length === 0) {
+        console.warn(`Geen kansen data gevonden voor type: ${type}`);
+        // Optioneel: Teken een lege grafiek of return
+    }
+
+    // 4. Tekenen
+    const ctx = document.getElementById('KansenGrafiek');
+    if (!ctx) return;
+
+    mijnKansenGrafiek = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: labelNaam,
+                data: dataPercentages,
+                backgroundColor: kleur,
+                borderRadius: 4,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100, // Altijd tot 100%
+                    title: { display: true, text: 'Zekerheid (%)' }
+                }
+            },
+            plugins: {
+                legend: { display: true }, // Laat zien wat we meten
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.raw.toFixed(1)}%`
+                    }
+                }
+            }
+        }
+    });
+}

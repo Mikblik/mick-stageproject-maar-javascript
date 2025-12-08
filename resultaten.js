@@ -32,9 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const patientinputveld = document.getElementById("DePatiënt");
     const patkiezenknop = document.getElementById('verstuurKnop');
 
-    // vangt keuze voor trendlijnen
+    // vangt keuze voor trendlijnen individupagina
     const selectLijn1 = document.getElementById('select-lijn-1');
     const selectLijn2 = document.getElementById('select-lijn-2');
+
+    //vangt keuze voor staafdiagram stadia/traject individupagina
+    const selectKansVisite = document.getElementById('select-kans-visite');
+    const selectKansType = document.getElementById('select-kans-type');
 
     // KIJKT HOEVEEL DATA JE HEBT 1 patient of meerdere?? en opent de juiste start pagina>!>!
     if (patientenLijst.length === 1) {
@@ -74,23 +78,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //---------------------------------------------------------------------
 
-    // 1. UPDATE BIJ PATIENT KEUZE trendlijn
     patkiezenknop.addEventListener('click', () => {
         const gekozenpatient = patientinputveld.value.trim();
-        // Filter de lijst
         gekozenpatientlijst = patientenLijst.filter(p => p.patient_id.trim() === gekozenpatient);
         
         console.log("Patient gekozen:", gekozenpatient);
 
-        // Teken de grafiek met de HUIDIGE waardes van de dropdowns
-        maakFlexibeleComboGrafiek(
-            gekozenpatientlijst, 
-            selectLijn1.value, 
-            selectLijn2.value
-        );
+        if (gekozenpatientlijst.length > 0) {
+            
+            // A. TEKEN COMBO GRAFIEK 
+            maakFlexibeleComboGrafiek(
+                gekozenpatientlijst, 
+                selectLijn1.value, 
+                selectLijn2.value
+            );
+
+            // B. VUL DE VISITE DROPDOWN 
+            vulVisiteDropdown(gekozenpatientlijst);
+            selectKansType.value = "Stadium"; 
+            // Trigger de tekenfunctie
+            maakKansenGrafiek(gekozenpatientlijst, selectKansVisite.value, "Stadium");
+        }
     });
 
-    // 2. UPDATE BIJ DROPDOWN WIJZIGING trendlijn(LINKS)
+    // Als visite verandert (staafdiagram (individupagina))
+    selectKansVisite.addEventListener('change', () => {
+        if (gekozenpatientlijst.length > 0) {
+            maakKansenGrafiek(
+                gekozenpatientlijst, 
+                selectKansVisite.value, 
+                selectKansType.value
+            );
+        }
+    });
+
+    // Als type verandert (Stadium vs Traject(staafdiagram individupagina))
+    selectKansType.addEventListener('change', () => {
+        if (gekozenpatientlijst.length > 0) {
+            maakKansenGrafiek(
+                gekozenpatientlijst, 
+                selectKansVisite.value, 
+                selectKansType.value
+            );
+        }
+    });
+
+    // vult de visite dropdown met visites (staafdiagram (individupagina))
+    function vulVisiteDropdown(data) {
+        // Maak dropdown leeg
+        selectKansVisite.innerHTML = "";
+        
+        // Sorteer visites (1, 2, 3...)
+        data.sort((a, b) => a.visit - b.visit);
+
+        // Maak voor elke visite een <option>
+        data.forEach(rij => {
+            const optie = document.createElement("option");
+            optie.value = rij.visit;
+            optie.text = `Visite ${rij.visit}`;
+            selectKansVisite.appendChild(optie);
+        });
+
+        // Selecteer standaard de EERSTE visite (of de laatste, wat je wilt)
+        if (data.length > 0) {
+            selectKansVisite.value = data[0].visit; 
+        }
+    }
+    // 2. UPDATE BIJ DROPDOWN WIJZIGING trendlijn(LINKS)(trendlijn individupagina)
     selectLijn1.addEventListener('change', () => {
         if (gekozenpatientlijst.length > 0) {
             maakFlexibeleComboGrafiek(
@@ -101,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. UPDATE BIJ DROPDOWN WIJZIGING trendlijn(RECHTS)
+    // 3. UPDATE BIJ DROPDOWN WIJZIGING trendlijn(RECHTS)(trendlijn individupagina)
     selectLijn2.addEventListener('change', () => {
         if (gekozenpatientlijst.length > 0) {
             maakFlexibeleComboGrafiek(
@@ -117,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'index.html';
     });
 
-    navPatientKnop.addEventListener('click', (event) => {
+    navPatientKnop.addEventListener('click', (event) => { 
         event.preventDefault(); 
         
         console.log("Schakel naar Individuele View");
