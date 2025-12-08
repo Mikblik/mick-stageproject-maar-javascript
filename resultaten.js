@@ -32,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const patientinputveld = document.getElementById("DePatiënt");
     const patkiezenknop = document.getElementById('verstuurKnop');
 
-    const featureselected = document.getElementById('feature-select')
+    // vangt keuze voor trendlijnen
+    const selectLijn1 = document.getElementById('select-lijn-1');
+    const selectLijn2 = document.getElementById('select-lijn-2');
 
     // KIJKT HOEVEEL DATA JE HEBT 1 patient of meerdere?? en opent de juiste start pagina>!>!
     if (patientenLijst.length === 1) {
@@ -71,22 +73,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 //---------------------------------------------------------------------
-    let gekozenpatientlijst = [];
-    // DE KNOP VOOR INDIVIDU PATIENT VERSTUREN
+
+    // 1. UPDATE BIJ PATIENT KEUZE trendlijn
     patkiezenknop.addEventListener('click', () => {
         const gekozenpatient = patientinputveld.value.trim();
+        // Filter de lijst
         gekozenpatientlijst = patientenLijst.filter(p => p.patient_id.trim() === gekozenpatient);
-        console.log("Dit is de gekozen patient:" + gekozenpatient);
-        console.log(gekozenpatientlijst)
+        
+        console.log("Patient gekozen:", gekozenpatient);
 
-        maakTijdlijnGrafiek(gekozenpatientlijst);
-        maakfeaturetijdlijn(gekozenpatientlijst, featureselected.value);
+        // Teken de grafiek met de HUIDIGE waardes van de dropdowns
+        maakFlexibeleComboGrafiek(
+            gekozenpatientlijst, 
+            selectLijn1.value, 
+            selectLijn2.value
+        );
     });
 
-    featureselected.addEventListener('change', () => {
-        console.log("gekozen feature:" + featureselected.value)
-        maakfeaturetijdlijn(gekozenpatientlijst, featureselected.value);
+    // 2. UPDATE BIJ DROPDOWN WIJZIGING trendlijn(LINKS)
+    selectLijn1.addEventListener('change', () => {
+        if (gekozenpatientlijst.length > 0) {
+            maakFlexibeleComboGrafiek(
+                gekozenpatientlijst, 
+                selectLijn1.value, 
+                selectLijn2.value
+            );
+        }
     });
+
+    // 3. UPDATE BIJ DROPDOWN WIJZIGING trendlijn(RECHTS)
+    selectLijn2.addEventListener('change', () => {
+        if (gekozenpatientlijst.length > 0) {
+            maakFlexibeleComboGrafiek(
+                gekozenpatientlijst, 
+                selectLijn1.value, 
+                selectLijn2.value
+            );
+        }
+    });
+   
 
     navHomeKnop.addEventListener('click', (event) => {
         window.location.href = 'index.html';

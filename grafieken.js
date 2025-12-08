@@ -1,99 +1,96 @@
 // Deze variabele staat "buiten" de functie en onthoudt de grafiek
-let mijnActieveGrafiek = null; 
-let mijnFeatureGrafiek = null;
 
-function maakTijdlijnGrafiek(data) {
+let mijnComboGrafiek = null;
 
-    if (mijnActieveGrafiek) {
-        mijnActieveGrafiek.destroy();
+function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
+
+    // 1. OPRUIMEN
+    if (mijnComboGrafiek) {
+        mijnComboGrafiek.destroy();
     }
-    // --------------------------------------------------
 
+    // 2. DATA VOORBEREIDEN
     data.sort((a, b) => a.visit - b.visit);
-    const labels_x_as = data.map(waarde => waarde.visit);
-    const data_y_as = data.map(waarde => {
-        return Number(waarde.ziektestadium.replace('L', ''));
-    });
+    const labels = data.map(waarde => `${waarde.visit}`);
 
-    const ctx = document.getElementById('Tijdlijn');
-    if (!ctx) {
-        console.error("Kan het <canvas> element 'Tijdlijn' niet vinden!");
-        return;
-    }
+    // --- Helper functie om data te extraheren ---
+    // Deze functie kijkt of het 'Ziektestadium' is of een gewone feature
+    const getFeatureData = (featureNaam) => {
+        if (featureNaam === 'Ziektestadium') {
+            // Speciale behandeling voor L1, L2...
+            return data.map(p => Number(p.ziektestadium.replace('L', '')));
+        } else {
+            // Gewone behandeling voor TJC, ESR, etc.
+            return data.map(p => Number(p[featureNaam]));
+        }
+    };
 
-    mijnActieveGrafiek = new Chart(ctx, {
+    const dataLinks = getFeatureData(featureLinks);
+    const dataRechts = getFeatureData(featureRechts);
+
+    // 3. CANVAS ZOEKEN
+    const ctx = document.getElementById('ComboGrafiek');
+    if (!ctx) return;
+
+    // 4. GRAFIEK BOUWEN
+    mijnComboGrafiek = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels_x_as,
-            datasets: [{
-                label: 'Verloop Ziektestadium',
-                data: data_y_as,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
+            labels: labels,
+            datasets: [
+                {
+                    label: featureLinks, // Naam uit dropdown 1
+                    data: dataLinks,
+                    borderColor: 'rgb(54, 162, 235)', // BLAUW
+                    backgroundColor: 'rgb(54, 162, 235)',
+                    yAxisID: 'y-axis-left', // Koppel aan linker as
+                    tension: 0.1
+                },
+                {
+                    label: featureRechts, // Naam uit dropdown 2
+                    data: dataRechts,
+                    borderColor: 'rgb(255, 99, 132)', // ROOD
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    yAxisID: 'y-axis-right', // Koppel aan rechter as
+                    tension: 0.1
+                }
+            ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, 
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             scales: {
                 x: {
                     title: { display: true, text: 'Visites' }
                 },
-                y: {
-                    title: { display: true, text: 'Ziektestadium (1-8)' },
-                    min: 1,
-                    max: 8,
-                    ticks: { stepSize: 1 }
+                // --- LINKER AS ---
+                'y-axis-left': {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: featureLinks, color: 'rgb(54, 162, 235)' },
+                    // Als het ziektestadium is, zet harde limieten 1-8
+                    min: (featureLinks === 'Ziektestadium') ? 1 : undefined,
+                    max: (featureLinks === 'Ziektestadium') ? 8 : undefined,
+                },
+                // --- RECHTER AS ---
+                'y-axis-right': {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: featureRechts, color: 'rgb(255, 99, 132)' },
+                    grid: { drawOnChartArea: false }, // Geen rasterlijnen voor rechts (wordt rommelig)
+                    min: (featureRechts === 'Ziektestadium') ? 1 : undefined,
+                    max: (featureRechts === 'Ziektestadium') ? 8 : undefined,
                 }
             }
         }
     });
 }
 
-function maakfeaturetijdlijn(data, feature) {
-
-    if (mijnFeatureGrafiek) {
-        mijnFeatureGrafiek.destroy();
-    }
-
-    data.sort((a, b) => a.visit - b.visit);
-    const labels_x_as = data.map(waarde => waarde.visit);
-    const data_y_as = data.map(waarde => {
-        return Number(waarde[feature]);
-    });
-
-    const ctx = document.getElementById('FeatureTijdlijn');
-    if (!ctx) {
-        console.error("Kan het <canvas> element 'Tijdlijn' niet vinden!");
-        return;
-    }
-
-    mijnFeatureGrafiek = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels_x_as,
-            datasets: [{
-                label: 'Verloop ' + feature,
-                data: data_y_as,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, 
-            scales: {
-                x: {
-                    title: { display: true, text: 'Visites' }
-                },
-                y: {
-                    title: { display: true, text: feature },
-                }
-            }
-        }
-    });
 
 
-}

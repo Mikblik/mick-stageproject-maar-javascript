@@ -46,42 +46,70 @@
             </div>
 
             <div class="grid grid-cols-3 gap-8">
-
+            <!-- eerste figuur 2 feature trendlijn indiv pagina-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+    
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="figuur 1 indiv voorbeeld"
-                    data-description="informatie indiv dingen">
-                        i
-                    </button>
-                    <div class="bg-white text-black rounded h-48">
-                        <canvas id="Tijdlijn"></canvas>
-                    </div>
-                </div>
-                
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="figuur 2 indiv voorbeeld"
-                    data-description="informatie 2 indiv dingen">
+                            data-title="Feature Vergelijking"
+                            data-description="Vergelijk het ziektestadium met klinische waardes over de tijd.">
                         i
                     </button>
 
-                    <label for="feature-select" class="block text-sm font-medium text-white mb-1">
-                        Kies een feature:
-                    </label>
-                    <select id="feature-select" class="w-full p-2 rounded text-black mb-4">
-                        <option value="ESR">ESR</option>
-                        <option value="TJC">TJC</option>
-                        <option value="SJC">SJC</option>
-                        <option value="Leukocytes">Leukocytes</option>
-                        <option value="HB">HB</option>
-                        <option value="Thrombocytes">Thrombocytes</option>
-                    </select>
+                    <div class="bg-white text-black rounded-lg p-4 h-auto flex flex-col">
+                        
+                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Verloop & Features</h3>
 
-                    <div class="bg-white text-black rounded h-48">
-                        <canvas id="FeatureTijdlijn"></canvas>
+                        <div class="flex space-x-2 mb-4">
+                            
+                            <div class="w-1/2">
+                                <label for="select-lijn-1" class="block text-[10px] font-bold text-blue-600 mb-1 uppercase">
+                                    Links (Blauw)
+                                </label>
+                                <div class="relative">
+                                    <select id="select-lijn-1" 
+                                            class="appearance-none w-full bg-blue-50 border border-blue-200 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:bg-white focus:border-blue-500 cursor-pointer">
+                                        <option value="Ziektestadium">Ziektestadium</option> <option value="TJC">TJC</option>
+                                        <option value="SJC">SJC</option>
+                                        <option value="ESR">ESR</option>
+                                        <option value="HB">HB</option>
+                                        <option value="Leukocytes">Leukocyten</option>
+                                        <option value="Thrombocytes">Thrombocyten</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
+                                        <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-1/2">
+                                <label for="select-lijn-2" class="block text-[10px] font-bold text-red-600 mb-1 uppercase">
+                                    Rechts (Rood)
+                                </label>
+                                <div class="relative">
+                                    <select id="select-lijn-2" 
+                                            class="appearance-none w-full bg-red-50 border border-red-200 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:bg-white focus:border-red-500 cursor-pointer">
+                                        <option value="ESR" selected>ESR</option>
+                                        <option value="Ziektestadium">Ziektestadium</option>
+                                        <option value="TJC">TJC</option>
+                                        <option value="SJC">SJC</option>
+                                        <option value="HB">HB</option>
+                                        <option value="Leukocytes">Leukocyten</option>
+                                        <option value="Thrombocytes">Thrombocyten</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-red-500">
+                                        <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="h-56 w-full">
+                            <canvas id="ComboGrafiek"></canvas>
+                        </div>
+
                     </div>
                 </div>
-
+                <!-- tweede figuur // indiv pagina-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                     data-title="figuur 1 voorbeeld"
@@ -90,17 +118,6 @@
                     </button>
                     <div class="bg-white text-black rounded h-48 flex items-center justify-center">
                         *graph projection 1 patiënt gemarkeerd op referentie*
-                    </div>
-                </div>
-                
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="figuur 1 voorbeeld"
-                    data-description="informatie dingen">
-                        i
-                    </button>
-                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        *ziektestadia + features op tijdlijn grafiek*
                     </div>
                 </div>
 
