@@ -178,3 +178,84 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
         }
     });
 }
+
+// ALLE PATIENT FIGUREN
+
+let mijnTrajectTrendGrafiek = null;
+
+function maakTrajectTrendGrafiek(gemiddeldeData, gekozenTraject, feature1, feature2) {
+    
+    const dataPunten = gemiddeldeData[gekozenTraject];
+
+    if (!dataPunten || dataPunten.length === 0) {
+        console.warn(`Geen data gevonden voor ${gekozenTraject}`);
+        if (mijnTrajectTrendGrafiek) mijnTrajectTrendGrafiek.destroy();
+        return;
+    }
+
+    const labels = dataPunten.map(d => `Visite ${d.visit}`);
+    const dataLijn1 = dataPunten.map(d => d[feature1]);
+    const dataLijn2 = dataPunten.map(d => d[feature2]);
+
+    const ctx = document.getElementById('TrajectTrendGrafiek');
+    if (!ctx) return;
+
+    if (mijnTrajectTrendGrafiek) {
+        mijnTrajectTrendGrafiek.destroy();
+    }
+
+    mijnTrajectTrendGrafiek = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: `Gemiddelde ${feature1}`,
+                    data: dataLijn1,
+                    borderColor: 'rgb(54, 162, 235)', // Blauw
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    yAxisID: 'y-left',
+                    tension: 0.1
+                },
+                {
+                    label: `Gemiddelde ${feature2}`,
+                    data: dataLijn2,
+                    borderColor: 'rgb(255, 99, 132)', // Rood
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    yAxisID: 'y-right',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Trends voor ${gekozenTraject} (n = aantal patiënten varieert per visite)`
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Visites' } },
+                'y-left': {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: feature1, color: 'rgb(54, 162, 235)' }
+                },
+                'y-right': {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: feature2, color: 'rgb(255, 99, 132)' }
+                }
+            }
+        }
+    });
+}

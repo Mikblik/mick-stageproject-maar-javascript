@@ -84,15 +84,69 @@ function berekenSoftmax(scores) {
     return kansen;
 }
 
+// In modellen.js
+
+function berekenGemiddeldesPerTraject(patientenLijst) {
+    console.log("--- Start berekenen gemiddelden per traject ---");
+    
+    const features = ['TJC', 'SJC', 'ESR', 'HB', 'Leukocytes', 'Thrombocytes'];
+    const tempOpslag = {}; 
+
+    ['TR1', 'TR2', 'TR3', 'TR4'].forEach(tr => {
+        tempOpslag[tr] = {};
+    });
+
+
+    patientenLijst.forEach(p => {
+        const traject = p.ziektetraject; 
+        const visit = p.visit;
+        
+        if (traject && tempOpslag[traject]) {
+            
+            if (!tempOpslag[traject][visit]) {
+                tempOpslag[traject][visit] = { count: 0 };
+                features.forEach(f => tempOpslag[traject][visit][f] = 0);
+            }
+
+            tempOpslag[traject][visit].count += 1;
+            features.forEach(f => {
+                tempOpslag[traject][visit][f] += Number(p[f] || 0);
+            });
+        }
+    });
+
+    // Output structuur: { 'TR1': [ {visit: 1, TJC: 4.5...}, {visit: 2...} ], 'TR2': ... }
+    const eindResultaat = {};
+
+    for (const [tr, visits] of Object.entries(tempOpslag)) {
+        eindResultaat[tr] = [];
+        
+        for (const [visiteNummer, data] of Object.entries(visits)) {
+            const gemiddeldeRij = { visit: Number(visiteNummer) };
+            
+            features.forEach(f => {
+                // Totaal delen door aantal patienten in die visite
+                gemiddeldeRij[f] = data[f] / data.count;
+            });
+            
+            eindResultaat[tr].push(gemiddeldeRij);
+        }
+
+        // Sorteer op visite (1, 2, 3..)
+        eindResultaat[tr].sort((a, b) => a.visit - b.visit);
+    }
+
+    console.log("Gemiddeldes berekend:", eindResultaat);
+    return eindResultaat;
+}
+
 
 function baselinemodel(patientenLijst) {
     console.log("--- Start Baseline Model ---");
     const baselineGeheugen = {};
 
-    // STAP 1: Zoek de nulmetingen (Visite 1) en bereken daar de baseline
     for (const waarde of patientenLijst) {
         
-        // Zeker weten dat het een getal is
         const visitNummer = Number(waarde.visit); 
         
         if (visitNummer === 1) {            
@@ -118,14 +172,12 @@ function baselinemodel(patientenLijst) {
         }
     }
 
-    // STAP 2: Vul data in bij alle visites (Het Uitpakken)
     for (const waarde of patientenLijst) {
-        const geheugen = baselineGeheugen[waarde.patient_id]; // Dit is het object { traject: "...", kansen: {...} }
+        const geheugen = baselineGeheugen[waarde.patient_id]; 
 
         if (geheugen) {
-            // HIER GING HET FOUT: Je moet ze los koppelen!
-            waarde.ziektetraject = geheugen.traject;      // "TR1"
-            waarde.trajectKansen = geheugen.kansen;       // {TR1: 0.8, TR2: 0.1...}
+            waarde.ziektetraject = geheugen.traject;     
+            waarde.trajectKansen = geheugen.kansen;       
         } else {
             waarde.ziektetraject = "Onbekend (Geen Baseline)";
             waarde.trajectKansen = null;

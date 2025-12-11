@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectKansVisite = document.getElementById('select-kans-visite');
     const selectKansType = document.getElementById('select-kans-type');
 
+    // vangt waardes voor alle patient trendlijn figuur.
+    const selectTrendTraject = document.getElementById('select-trend-traject');
+    const selectTrendFeat1 = document.getElementById('select-trend-feat1');
+    const selectTrendFeat2 = document.getElementById('select-trend-feat2');
+
+
     // KIJKT HOEVEEL DATA JE HEBT 1 patient of meerdere?? en opent de juiste start pagina>!>!
     if (patientenLijst.length === 1) {
         individueleView.classList.remove('hidden');
@@ -219,5 +225,30 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }
     });
+    
+    // ALLE PATIENT FIGUREN HIERONDER
+
+    const trajectGemiddeldes = berekenGemiddeldesPerTraject(patientenLijst);
+
+    // Functie om grafiek te updaten
+    function updateTrendGrafiek() {
+        maakTrajectTrendGrafiek(
+            trajectGemiddeldes, 
+            selectTrendTraject.value, 
+            selectTrendFeat1.value, 
+            selectTrendFeat2.value
+        );
+    }
+
+    // Event listeners toevoegen
+    if(selectTrendTraject && selectTrendFeat1 && selectTrendFeat2) {
+        selectTrendTraject.addEventListener('change', updateTrendGrafiek);
+        selectTrendFeat1.addEventListener('change', updateTrendGrafiek);
+        selectTrendFeat2.addEventListener('change', updateTrendGrafiek);
+
+        // Initiële grafiek tekenen (Default: TR1, TJC, SJC)
+        updateTrendGrafiek();
+    }
+
 
 });
