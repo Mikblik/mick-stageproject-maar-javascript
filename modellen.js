@@ -1,4 +1,4 @@
-// Hier worden alle model functies gedaan!
+// Hier worden alle model functies gedaan en hulp functies 
 
 function ziektestadiamodel(patientenLijst){
     for (const waarde of patientenLijst) {
@@ -29,14 +29,14 @@ function ziektestadiamodel(patientenLijst){
         };
 
         const kansen = berekenSoftmax(resultaten);
-        waarde.stadiumKansen = kansen; // { L1: 0.12, L2: 0.05 ... }
+        waarde.stadiumKansen = kansen;
 
         // Hoogste bepalen
         const [hoogsteID, hoogsteWaarde] = Object.entries(resultaten).reduce((max, current) => current[1] > max[1] ? current : max);
 
         console.log(`De winnaar is ${hoogsteID} met score ${hoogsteWaarde}`);
 
-        // 4. ziektestadium toevoegen aan de main dictionary :D
+        // ziektestadium toevoegen aan de main dictionary :D
         waarde.ziektestadium = hoogsteID;
     }
 };
@@ -62,8 +62,6 @@ function voegVisiteTellersToe(patientenLijst) {
 }
 
 function berekenSoftmax(scores) {
-    // 1. Bereken e^score voor alles
-    // We trekken eerst de max eraf voor numerieke stabiliteit (voorkomt "Infinity" bij grote getallen)
     const values = Object.values(scores);
     const maxVal = Math.max(...values);
     
@@ -76,7 +74,6 @@ function berekenSoftmax(scores) {
         totaalSom += exp;
     }
 
-    // 2. Deel door totaal om percentage te krijgen (0.0 tot 1.0)
     const kansen = {};
     for (const [key, val] of Object.entries(exponenten)) {
         kansen[key] = val / totaalSom;
@@ -84,7 +81,6 @@ function berekenSoftmax(scores) {
     return kansen;
 }
 
-// In modellen.js
 
 function berekenGemiddeldesPerTraject(patientenLijst) {
     console.log("--- Start berekenen gemiddelden per traject ---");
@@ -115,7 +111,6 @@ function berekenGemiddeldesPerTraject(patientenLijst) {
         }
     });
 
-    // Output structuur: { 'TR1': [ {visit: 1, TJC: 4.5...}, {visit: 2...} ], 'TR2': ... }
     const eindResultaat = {};
 
     for (const [tr, visits] of Object.entries(tempOpslag)) {
@@ -125,14 +120,12 @@ function berekenGemiddeldesPerTraject(patientenLijst) {
             const gemiddeldeRij = { visit: Number(visiteNummer) };
             
             features.forEach(f => {
-                // Totaal delen door aantal patienten in die visite
                 gemiddeldeRij[f] = data[f] / data.count;
             });
             
             eindResultaat[tr].push(gemiddeldeRij);
         }
 
-        // Sorteer op visite (1, 2, 3..)
         eindResultaat[tr].sort((a, b) => a.visit - b.visit);
     }
 
@@ -157,13 +150,10 @@ function baselinemodel(patientenLijst) {
                 TR4: (Number(waarde.TJC) * 0.619) + (Number(waarde.SJC) * -0.359),
             };
 
-            // 1. Kansen berekenen
             const kansen = berekenSoftmax(resultaten);
             
-            // 2. Winnaar bepalen
             const [hoogsteID] = Object.entries(resultaten).reduce((max, current) => current[1] > max[1] ? current : max);
             
-            // 3. Opslaan in geheugen als OBJECT
             baselineGeheugen[waarde.patient_id] = {
                 traject: hoogsteID,
                 kansen: kansen
@@ -184,4 +174,94 @@ function baselinemodel(patientenLijst) {
         }
     }
     console.log("Baseline Model voltooid.");
+}
+
+// ------ DTW/KNN PIPELNE
+
+function stadiumNaarGetal(stadiumCode) {
+    if (!stadiumCode) return 0;
+    return parseInt(stadiumCode.replace('L', '')) || 0;
+}
+
+function berekenDTWAfstand(seq1, seq2) {
+    const n = seq1.length;
+    const m = seq2.length;
+    
+    let dtw = Array(n + 1).fill(null).map(() => Array(m + 1).fill(Infinity));
+    dtw[0][0] = 0;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            const val1 = stadiumNaarGetal(seq1[i - 1]);
+            const val2 = stadiumNaarGetal(seq2[j - 1]);
+            
+            const cost = Math.abs(val1 - val2);
+            
+            dtw[i][j] = cost + Math.min(
+                dtw[i - 1][j],     
+                dtw[i][j - 1],     
+                dtw[i - 1][j - 1]  
+            );
+        }
+    }
+    return dtw[n][m] / (n + m);
+}
+
+
+function pipeline_DTW_KNN(patientenLijst) {
+    console.log("--- Start DTW/KNN Pipeline ---");
+
+    const gesorteerd = [...patientenLijst].sort((a, b) => a.visit - b.visit);
+    
+    const patientSequentie = gesorteerd
+        .map(p => p.ziektestadium)
+        .filter(s => s !== undefined);
+
+    if (patientSequentie.length === 0) {
+        console.error("Geen ziektestadia gevonden voor deze patiënt!");
+        return null;
+    }
+
+    console.log("Patiënt Sequentie:", patientSequentie);
+
+    const scores = REFERENTIE_BIBLIOTHEEK.map(refPat => {
+        const afstand = berekenDTWAfstand(patientSequentie, refPat.sequentie);
+        return {
+            id: refPat.id,
+            traject: refPat.traject,
+            sequentie: refPat.sequentie,
+            afstand: afstand
+        };
+    });
+
+    scores.sort((a, b) => a.afstand - b.afstand);
+
+    const k = 5; 
+    const buren = scores.slice(0, k);
+    console.log(`Top ${k} buren:`, buren);
+
+    const stemmen = {};
+    buren.forEach(buur => {
+        stemmen[buur.traject] = (stemmen[buur.traject] || 0) + 1;
+    });
+
+    let winnendTraject = null;
+    let meesteStemmen = -1;
+
+    Object.keys(stemmen).forEach(traject => {
+        if (stemmen[traject] > meesteStemmen) {
+            meesteStemmen = stemmen[traject];
+            winnendTraject = traject;
+        }
+    });
+
+    console.log("Voorspeld Traject (KNN):", winnendTraject);
+
+    patientenLijst.forEach(p => {
+        p.knn_voorspelling = winnendTraject;
+        p.knn_buren = buren; 
+        p.ziektetraject = winnendTraject;
+    });
+
+    return winnendTraject;
 }
