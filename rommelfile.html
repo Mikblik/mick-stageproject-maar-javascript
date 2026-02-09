@@ -1,4 +1,4 @@
-------------------------------------------------------------------------
+------------------------------------------------------------------------<><><>
 
 --volledige to do lijst--
 visit niet interactable maken bij zekerheid/voorspelling figuur voor traject.
@@ -23,7 +23,9 @@ I knop werkend maken
 
 combo model maken en meer models dynamisch kunnen gebruiken.
 
-------------------------------------------------------------------------
+DUidelijk laten zien welk model je hebt gekozen
+
+------------------------------------------------------------------------<><><>
 
 --feedback tussenproduct--
 Dieper gaan in doel van project
@@ -41,4 +43,43 @@ tabel met belangrijke puntjes over notificaties.
 
 niet meer alles bewaren voor maandag // meer laten zien wat ik doe
 
-------------------------------------------------------------------------
+----------------------------------------------------------------------<><><>
+
+punten voor meeting 09/02/2026
+
+-vraag maandag hoe precies meerdere modellen implementeren
+
+-Traject model heeft wel alle data nodig -> imputeren? van gem stadia referentie? 
+<-- NEE niet gebruiken met baseline --- MET KNN kan wel -->
+
+-missende values in figuren mogelijke oplossingen
+
+-trendlijn -> NULL -> onderbreekt lijn
+
+-heatmap -> N/A of no data etc 
+
+PCA -> 2 opties        -> 1 alle missing values patienten verwijderd <-- verwijderen -->
+                          2 data imputeren? gemiddelde van traject of stadia pakken en imputeren?
+
+                         Denk dat optie 1 beter is hier -> echte data gebruiken inplaats van "nep"?
+                         maar wel minder data dan, ligt eigenlijk aan hoevaak er data mist 90% of 10%?
+
+- ander punt. -> waarop baseer ik de PCA het beste - > op dit moment is het de gemiddelde 
+van alle klinische waardes van de visites bij elkaar en dat vergelijkt per patient. (klinkt niet goed)
+-> beter is alleen baseline klinische waardes? < Elke visite er in zetten van elke patiënt> 
+
+-> data normaliseren voor PCA is nodig toch? want Thrombocyten is 1000x zo groot als andere dingen
+    -> zag z score van maken is dit beste? moet verder ff in verdiepen dan < goede optie > 
+        -> is Z score ook beter voor de heatmaps? of overbodig? < overbodig voor nu kan met tijd over >
+
+-> is verkaarde variatie PC1 en PC2 handig voor in de PCA plot? kijken naar opties PC3++?
+    BV. optie PC1 vs PC3 of overbodig? < max PC3 >
+
+- planning volgende week -> checks versoepelen voor de input van data
+                         -> beginnen aan code veranderen dat meerdere modellen mogelijk zijn
+                         -> eerdere figuren aanpassen dat ze met missing values kunnen werken
+
+------------------------------------------------------------------------<><><>
+
+
+
