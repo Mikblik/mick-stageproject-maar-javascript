@@ -84,37 +84,58 @@ van alle klinische waardes van de visites bij elkaar en dat vergelijkt per patie
 Meeting 16/02/2026
 
 Nieuwe aanpassingen ->
--> Kan nu custom csv model toevoegen
--> kan nu missing data hebben en de figuren zullen niet breken 
--> lijn figuur bij missing data zal bij 0 naar beneden schieten 
+    -> Kan nu custom csv model toevoegen < model file achtergrond dus niet zelf toevoegen op site><
+    -> kan nu missing data hebben en de figuren zullen niet breken < stippelijn bij trendfiguur></stippelijn>
+    -> lijn figuur bij missing data zal bij 0 naar beneden schieten 
     en bij missing stoppen op dat punt en daarna verder
 
--> figuren zullen duidelijk aangeven nu als er te weinig data
-->heatmaps kunnen nu 0 en *niks* laten zien
+    -> figuren zullen duidelijk aangeven nu als er te weinig data < lege lijn bij heatmap als geen stadia > </lege>
+    ->heatmaps kunnen nu 0 en *niks* laten zien
 
--> PCA is veranderd. -> laat nu elke patient zijn visite zien MAAR wanneer iets mist = DELETED uit figuur.
--> laat alleen PCA zien bij minimaal  6 complete visites -> MEER of minder? of goed? (dacht 6 datapunten dus 6 visite is ok?)
--> PCA is genormaliseerd -> gebruikt Z score
+    -> custom csv model voorbeeld laten zien 
+    -> werkt nu als waterval van beste naar steeds slechtere
+        -> als geen model toegevoegd -> gebruik default die al in code zat.
 
--> custom csv model voorbeeld laten zien 
-    -> werkt nu als waterval van beste naar slechtere
+PCA ->
+-> PCA is veranderd. -> laat nu elke patient zijn visite zien MAAR 
+   wanneer iets mist = DELETED uit figuur.
+-> laat alleen PCA zien bij minimaal  6 complete visites -> 
+   MEER of minder? of goed? (dacht 6 datapunten dus 6 visite is ok?)
+-> PCA is genormaliseerd -> gebruikt Z score ->
 
+-- de grote vraag -----------
+-> Ik gebruik dus Z score op de volgende manier (waarde patient - waarde gem) / standaardafwijking
+    Maar mijn gem en sd zijn berekent vanaf de data die je upload (dus bv je 6 visites)
+
+    -> Kan het beter zijn om standaard gemiddelde en sd per traject/stadia/algemeen gem te gebruiken?
+        (denk algemeen gem beste)
+       ik dacht dat dit mischien beter is, omdat het dan iets minder random voelt op je eigen data
+       uitschieters zullen nu gebasseerd zijn op de rest van je data inplaats van standaard op grotere
+       eerdere dataset? 
+    -> een X waarde van een patient zal met standaard waarde hierdoor ook altijd hetzelfde 
+       zijn in verschillende datasets met overlappende patient
+    -> denk dat dit beter is vooral voor als je kleinere data sets invoert.
+    -> mischien optie om te kiezen of keuze bij X aantal visites deze en anders dat? < is oke zo voor nu></is>
+
+--  -  -- 
 planning  ->
-    verder gaan met nieuwe figuren
+    ->verder gaan met nieuwe figuren
 
-    de niet gebruikte patienten / patienten die iets missen apart opslaan ->
-        knopje maken om naar excel te schrijven? (denk duidelijker dan tabel in pagina zelf.)
+    ->de niet gebruikte patienten / patienten die iets missen apart opslaan ->
+        knopje maken om naar excel te schrijven? (denk duidelijker dan tabel in pagina zelf.) < laten zien HOEVEEL (2)patienten min 1 viisite missen / (3)alle visite missen en (1)hoeveel visites missen in totaal ></laten>
 
-    moet op 26 feb terugkomdag 3 op school met presentatie / huiswerk ding, dus dan ben ik er niet.
+    -> de missing data optie mogelijk makne voor de indiv patient invul plek + 
+        model toevoeg knop zetten.
 
-    moet ook nog een dag dit voorbereiden met iemand 
-    dus deze week of  
-    volgende week ben ik er 1 dag niet 
-    (ligt aan wanneer beide kunnen -> moet nog plannen met hem -> wacht op mail van hem)
+    ->moet op 26 feb terugkomdag 3 op school met presentatie / huiswerk ding, dus dan ben ik er niet.
+
+    ->moet ook nog een dag dit voorbereiden met iemand 
+        dus deze week of volgende week ben ik er 1 dag niet 
+        (ligt aan wanneer beide kunnen -> moet nog plannen met hem -> wacht op mail van hem)
 
     deadline tussenraportage 4 april nog lang niet maar alvast genoteerd
 
-nog nodig -> 
+->nog nodig -> 
     die meerdere modellen (maar geen haast gebruik nu placeholder)
 
 ------------------------------------------------------------------------<><><>
