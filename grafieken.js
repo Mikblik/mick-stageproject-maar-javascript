@@ -1,3 +1,30 @@
+// ==========================================================================
+// HULPFUNCTIES VOOR MISSENDE DATA (UI MELDINGEN)
+// ==========================================================================
+
+function schrijfMeldingInCanvas(ctxId, tekst) {
+    const canvas = document.getElementById(ctxId);
+    if (!canvas) return;
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = "14px Arial";
+    context.fillStyle = "#6b7280"; // Grijze tekst
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(tekst, canvas.width / 2, canvas.height / 2);
+}
+
+function schrijfMeldingInDiv(divId, tekst) {
+    const container = document.getElementById(divId);
+    if (!container) return;
+    container.innerHTML = `<div class="flex items-center justify-center h-full w-full text-gray-500 text-sm text-center px-4">${tekst}</div>`;
+}
+
+
+// ==========================================================================
+// INDIVIDUELE FIGUREN
+// ==========================================================================
+
 let mijnComboGrafiek = null;
 let mijnKansenGrafiek = null;
 
@@ -11,9 +38,17 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
 
     const getFeatureData = (featureNaam) => {
         if (featureNaam === 'Ziektestadium') {
-            return data.map(p => Number(p.ziektestadium.replace('L', '')));
+            return data.map(p => {
+                // FIX: Als stadium onbekend is, teken geen stip
+                if (!p.ziektestadium || p.ziektestadium.startsWith("Onbekend")) return null;
+                return Number(p.ziektestadium.replace('L', ''));
+            });
         } else {
-            return data.map(p => Number(p[featureNaam]));
+            return data.map(p => {
+                // FIX: Voorkom dat Number(null) een 0 wordt!
+                if (p[featureNaam] === null || p[featureNaam] === undefined || p[featureNaam] === "") return null;
+                return Number(p[featureNaam]);
+            });
         }
     };
 
@@ -34,7 +69,8 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
                     borderColor: 'rgb(54, 162, 235)', 
                     backgroundColor: 'rgb(54, 162, 235)',
                     yAxisID: 'y-axis-left', 
-                    tension: 0.1
+                    tension: 0.1,
+                    spanGaps: false 
                 },
                 {
                     label: featureRechts, 
@@ -42,33 +78,25 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
                     borderColor: 'rgb(255, 99, 132)', 
                     backgroundColor: 'rgb(255, 99, 132)',
                     yAxisID: 'y-axis-right', 
-                    tension: 0.1
+                    tension: 0.1,
+                    spanGaps: false
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             scales: {
-                x: {
-                    title: { display: true, text: 'Visites' }
-                },
+                x: { title: { display: true, text: 'Visites' } },
                 'y-axis-left': {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
+                    type: 'linear', display: true, position: 'left',
                     title: { display: true, text: featureLinks, color: 'rgb(54, 162, 235)' },
                     min: (featureLinks === 'Ziektestadium') ? 1 : undefined,
                     max: (featureLinks === 'Ziektestadium') ? 8 : undefined,
                 },
                 'y-axis-right': {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
+                    type: 'linear', display: true, position: 'right',
                     title: { display: true, text: featureRechts, color: 'rgb(255, 99, 132)' },
                     grid: { drawOnChartArea: false }, 
                     min: (featureRechts === 'Ziektestadium') ? 1 : undefined,
@@ -80,18 +108,19 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
 }
 
 
-
 function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
-    
+    if (mijnKansenGrafiek) {
+        mijnKansenGrafiek.destroy();
+    }
+
+    const ctx = document.getElementById('KansenGrafiek');
+    if (!ctx) return;
+
     const visiteData = patientData.find(p => p.visit == gekozenVisiteNummer);
 
     if (!visiteData) {
-        console.warn("Geen data gevonden voor visite", gekozenVisiteNummer);
+        schrijfMeldingInCanvas('KansenGrafiek', `Geen data gevonden voor visite ${gekozenVisiteNummer}`);
         return;
-    }
-
-    if (mijnKansenGrafiek) {
-        mijnKansenGrafiek.destroy();
     }
 
     let labels = [];
@@ -100,27 +129,25 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
     let labelNaam = '';
 
     if (type === 'Stadium') {
-        if (visiteData.stadiumKansen) {
-            labels = Object.keys(visiteData.stadiumKansen).sort(); 
-            dataPercentages = labels.map(k => visiteData.stadiumKansen[k] * 100);
-            kleur = 'rgba(54, 162, 235, 0.8)'; 
-            labelNaam = 'Kans op Ziektestadium (%)';
+        if (!visiteData.stadiumKansen) {
+            schrijfMeldingInCanvas('KansenGrafiek', "Patiënt mist benodigde data voor Ziektestadia.");
+            return;
         }
+        labels = Object.keys(visiteData.stadiumKansen).sort(); 
+        dataPercentages = labels.map(k => visiteData.stadiumKansen[k] * 100);
+        kleur = 'rgba(54, 162, 235, 0.8)'; 
+        labelNaam = 'Kans op Ziektestadium (%)';
+        
     } else if (type === 'Traject') {
-        if (visiteData.trajectKansen) {
-            labels = Object.keys(visiteData.trajectKansen).sort();
-            dataPercentages = labels.map(k => visiteData.trajectKansen[k] * 100);
-            kleur = 'rgba(75, 192, 192, 0.8)';
-            labelNaam = 'Kans op Traject (%)';
+        if (!visiteData.trajectKansen) {
+            schrijfMeldingInCanvas('KansenGrafiek', "Patiënt uitgesloten van trajectmodel wegens missende data.");
+            return;
         }
+        labels = Object.keys(visiteData.trajectKansen).sort();
+        dataPercentages = labels.map(k => visiteData.trajectKansen[k] * 100);
+        kleur = 'rgba(75, 192, 192, 0.8)';
+        labelNaam = 'Kans op Traject (%)';
     }
-
-    if (labels.length === 0) {
-        console.warn(`Geen kansen data gevonden voor type: ${type}`);
-    }
-
-    const ctx = document.getElementById('KansenGrafiek');
-    if (!ctx) return;
 
     mijnKansenGrafiek = new Chart(ctx, {
         type: 'bar',
@@ -135,166 +162,11 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100, 
-                    title: { display: true, text: 'Zekerheid (%)' }
-                }
-            },
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Zekerheid (%)' } } },
             plugins: {
                 legend: { display: true }, 
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => `${ctx.raw.toFixed(1)}%`
-                    }
-                }
-            }
-        }
-    });
-}
-
-// ALLE PATIENT FIGUREN
-
-let mijnTrajectTrendGrafiek = null;
-
-function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
-    
-    let maxVisit = 0;
-    Object.values(gemiddeldeData).forEach(lijst => {
-        if (lijst) {
-            lijst.forEach(punt => {
-                if (punt.visit > maxVisit) maxVisit = punt.visit;
-            });
-        }
-    });
-
-    if (maxVisit === 0) {
-        console.warn("Geen visites gevonden voor trendgrafiek.");
-        if (mijnTrajectTrendGrafiek) mijnTrajectTrendGrafiek.destroy();
-        return;
-    }
-
-    const labels = [];
-    for (let i = 1; i <= maxVisit; i++) {
-        labels.push(`Visite ${i}`);
-    }
-
-    const trajectConfig = [
-        { id: 'TR1', label: 'TR1', dash: [] },              // Vast
-        { id: 'TR2', label: 'TR2', dash: [5, 5] },          // Streepjes
-        { id: 'TR3', label: 'TR3', dash: [2, 2] },          // Stippels
-        { id: 'TR4', label: 'TR4', dash: [10, 5, 2, 5] }    // Streep Punt
-    ];
-
-    let alleDatasets = [];
-
-    trajectConfig.forEach(config => {
-        const rawData = gemiddeldeData[config.id]; 
-
-        const dataReeks1 = new Array(maxVisit).fill(null);
-        const dataReeks2 = new Array(maxVisit).fill(null);
-        let heeftData = false;
-
-        if (rawData && rawData.length > 0) {
-            rawData.forEach(punt => {
-                const index = punt.visit - 1; 
-                if (index >= 0 && index < maxVisit) {
-                    dataReeks1[index] = punt[feature1];
-                    dataReeks2[index] = punt[feature2];
-                    heeftData = true;
-                }
-            });
-        }
-
-        if (heeftData) {
-            alleDatasets.push({
-                label: `${config.id}: ${feature1}`,
-                data: dataReeks1, 
-                borderColor: 'rgb(54, 162, 235)',
-                backgroundColor: 'rgb(54, 162, 235)',
-                borderDash: config.dash,
-                borderWidth: 2,
-                yAxisID: 'y-left',
-                tension: 0.1,
-                pointRadius: 6, // GROTER PUNTJE: Zodat je enkele punten goed ziet
-                pointHoverRadius: 8,
-                spanGaps: true 
-            });
-
-            alleDatasets.push({
-                label: `${config.id}: ${feature2}`,
-                data: dataReeks2,
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderDash: config.dash,
-                borderWidth: 2,
-                yAxisID: 'y-right',
-                tension: 0.1,
-                pointRadius: 6,
-                pointHoverRadius: 8,
-                spanGaps: true
-            });
-        }
-    });
-
-    const ctx = document.getElementById('TrajectTrendGrafiek');
-    if (!ctx) return;
-
-    if (mijnTrajectTrendGrafiek) {
-        mijnTrajectTrendGrafiek.destroy();
-    }
-
-    mijnTrajectTrendGrafiek = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels, 
-            datasets: alleDatasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: `Vergelijking Trajecten: ${feature1} (Links) vs ${feature2} (Rechts)`
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let val = context.parsed.y;
-                            if (val !== null && val !== undefined) {
-                                return context.dataset.label + ': ' + val.toFixed(2);
-                            }
-                            return '';
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { 
-                    display: true,
-                    title: { display: true, text: 'Visites' }
-                },
-                'y-left': {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: { display: true, text: feature1, color: 'rgb(54, 162, 235)' }
-                },
-                'y-right': {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: { drawOnChartArea: false },
-                    title: { display: true, text: feature2, color: 'rgb(255, 99, 132)' }
-                }
+                tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toFixed(1)}%` } }
             }
         }
     });
@@ -304,29 +176,41 @@ function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
 let mijnApexHeatmap = null;
 
 function maakApexHeatmap(patientenLijst) {
-    
-    const gesorteerdeLijst = [...patientenLijst].sort((a, b) => a.visit - b.visit);
+    const chartContainer = document.querySelector("#heatmapChart");
+    if (!chartContainer) return;
 
+    if (mijnApexHeatmap) {
+        mijnApexHeatmap.destroy();
+    }
+    chartContainer.innerHTML = ''; 
+
+    const gesorteerdeLijst = [...patientenLijst].sort((a, b) => a.visit - b.visit);
     const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
     const alleSeries = []; 
 
-    gesorteerdeLijst.forEach(visiteData => {
-        const stadium = visiteData.ziektestadium;
-        
-        if (!stadium || !REF_GEM_PER_STADIA[stadium]) return;
+    const geldigeVisites = gesorteerdeLijst.filter(v => v.ziektestadium && REF_GEM_PER_STADIA[v.ziektestadium]);
 
+    if (geldigeVisites.length === 0) {
+        schrijfMeldingInDiv("heatmapChart", "Geen berekende ziektestadia beschikbaar wegens missende data.");
+        return;
+    }
+
+    geldigeVisites.forEach(visiteData => {
+        const stadium = visiteData.ziektestadium;
         const refWaardes = REF_GEM_PER_STADIA[stadium];
         const rowData = [];
 
         features.forEach(feat => {
+            if (visiteData[feat] === null || visiteData[feat] === undefined) {
+                rowData.push({ x: feat, y: null });
+                return;
+            }
+
             let patVal = Number(visiteData[feat]);
             let refVal = refWaardes[feat];
 
             if ((feat === 'HB' || feat === 'Thrombocytes' || feat === 'Leukocytes') && patVal === 0) {
-                rowData.push({
-                    x: feat,
-                    y: null 
-                });
+                rowData.push({ x: feat, y: null });
                 return; 
             }
 
@@ -335,12 +219,7 @@ function maakApexHeatmap(patientenLijst) {
             rowData.push({
                 x: feat,
                 y: ratio.toFixed(2),
-                goals: [{
-                    value: patVal, 
-                    strokeHeight: 0 
-                }, {
-                    value: refVal // De referentiewaarde
-                }]
+                goals: [{ value: patVal, strokeHeight: 0 }, { value: refVal }]
             });
         });
 
@@ -350,18 +229,12 @@ function maakApexHeatmap(patientenLijst) {
         });
     });
 
-    // Grafiek Opties
     const options = {
-        series: alleSeries.reverse(), // Visite 1 boven, Visite 2 onder
-        chart: {
-            height: 350,
-            type: 'heatmap',
-            toolbar: { show: false }
-        },
+        series: alleSeries.reverse(), 
+        chart: { height: 350, type: 'heatmap', toolbar: { show: false } },
         plotOptions: {
             heatmap: {
-                shadeIntensity: 0.5,
-                radius: 2, // Iets rondere hoekjes
+                shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
                         { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul / Zeer laag' }, 
@@ -372,23 +245,14 @@ function maakApexHeatmap(patientenLijst) {
                 }
             }
         },
-        dataLabels: {
-            enabled: true,
-            style: { colors: ['#000'] } 
-        },
-        title: {
-            text: `Afwijking tegen ziektestadia referentie`
-        },
-        xaxis: {
-            position: 'bottom', 
-            tooltip: { enabled: false }
-        },
+        dataLabels: { enabled: true, style: { colors: ['#000'] } },
+        title: { text: `Afwijking tegen ziektestadia referentie` },
+        xaxis: { position: 'bottom', tooltip: { enabled: false } },
         tooltip: {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 const ratio = data.y;
-                
-                if (ratio === null) return '<div class="p-2 text-xs">Geen data</div>';
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white shadow border">Geen data ingevuld</div>';
 
                 const patVal = data.goals && data.goals[0] ? data.goals[0].value.toFixed(1) : "?";
                 const refVal = data.goals && data.goals[1] ? data.goals[1].value.toFixed(1) : "?";
@@ -407,40 +271,43 @@ function maakApexHeatmap(patientenLijst) {
         }
     };
 
-    if (mijnApexHeatmap) {
-        mijnApexHeatmap.destroy();
-    }
-
-    const chartContainer = document.querySelector("#heatmapChart");
-    if(chartContainer) {
-        mijnApexHeatmap = new ApexCharts(chartContainer, options);
-        mijnApexHeatmap.render();
-    }
+    mijnApexHeatmap = new ApexCharts(chartContainer, options);
+    mijnApexHeatmap.render();
 }
 
-// Traject heatmap individu pagiina.
+
 let mijnTrajectHeatmap = null;
 
 function maakTrajectHeatmap(patientenLijst) {
+    const chartContainer = document.querySelector("#trajectHeatmapChart");
+    if (!chartContainer) return;
+
+    if (mijnTrajectHeatmap) {
+        mijnTrajectHeatmap.destroy();
+    }
+    chartContainer.innerHTML = '';
+
     const gesorteerdeLijst = [...patientenLijst].sort((a, b) => a.visit - b.visit);
-    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
-    const alleSeries = []; 
-
-
     const voorspeldTraject = gesorteerdeLijst[0].ziektetraject;
 
     if (!voorspeldTraject || !REF_TRAJECT_BASELINE[voorspeldTraject]) {
-        console.warn("Geen referentiedata voor traject:", voorspeldTraject);
-        if (mijnTrajectHeatmap) mijnTrajectHeatmap.destroy();
+        schrijfMeldingInDiv("trajectHeatmapChart", "Patiënt uitgesloten van baseline model (ontbrekende data). Heatmap niet mogelijk.");
         return;
     }
 
+    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
+    const alleSeries = []; 
     const refWaardes = REF_TRAJECT_BASELINE[voorspeldTraject];
 
     gesorteerdeLijst.forEach(visiteData => {
         const rowData = [];
 
         features.forEach(feat => {
+            if (visiteData[feat] === null || visiteData[feat] === undefined) {
+                rowData.push({ x: feat, y: null });
+                return;
+            }
+
             let patVal = Number(visiteData[feat]);
             let refVal = refWaardes[feat]; 
 
@@ -454,32 +321,19 @@ function maakTrajectHeatmap(patientenLijst) {
             rowData.push({
                 x: feat,
                 y: ratio.toFixed(2),
-                goals: [{ 
-                    value: patVal, 
-                    strokeHeight: 0 
-                }, { 
-                    value: refVal 
-                }]
+                goals: [{ value: patVal, strokeHeight: 0 }, { value: refVal }]
             });
         });
 
-        alleSeries.push({
-            name: `Visite ${visiteData.visit}`, 
-            data: rowData
-        });
+        alleSeries.push({ name: `Visite ${visiteData.visit}`, data: rowData });
     });
 
     const options = {
         series: alleSeries.reverse(), 
-        chart: {
-            height: 350,
-            type: 'heatmap',
-            toolbar: { show: false }
-        },
+        chart: { height: 350, type: 'heatmap', toolbar: { show: false } },
         plotOptions: {
             heatmap: {
-                shadeIntensity: 0.5,
-                radius: 2,
+                shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
                         { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul' }, 
@@ -491,15 +345,13 @@ function maakTrajectHeatmap(patientenLijst) {
             }
         },
         dataLabels: { enabled: true, style: { colors: ['#000'] } },
-        title: {
-            text: `Afwijking heatmap ${voorspeldTraject}`
-        },
+        title: { text: `Afwijking heatmap ${voorspeldTraject}` },
         xaxis: { position: 'bottom', tooltip: { enabled: false } },
         tooltip: {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 const ratio = data.y;
-                if (ratio === null) return '<div class="p-2 text-xs">Geen data</div>';
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white border">Geen data ingevuld</div>';
                 
                 const patVal = data.goals[0].value.toFixed(1);
                 const refVal = data.goals[1].value.toFixed(1);
@@ -518,18 +370,10 @@ function maakTrajectHeatmap(patientenLijst) {
         }
     };
 
-    if (mijnTrajectHeatmap) {
-        mijnTrajectHeatmap.destroy();
-    }
-
-    const chartContainer = document.querySelector("#trajectHeatmapChart");
-    if(chartContainer) {
-        mijnTrajectHeatmap = new ApexCharts(chartContainer, options);
-        mijnTrajectHeatmap.render();
-    }
+    mijnTrajectHeatmap = new ApexCharts(chartContainer, options);
+    mijnTrajectHeatmap.render();
 }
 
-// top 5 buren tabel individupaigna
 function vulBurenTabel(patientenLijst) {
     const tabelBody = document.getElementById('burenTabelBody');
     const meldingVeld = document.getElementById('geenBurenMelding');
@@ -541,8 +385,6 @@ function vulBurenTabel(patientenLijst) {
     const patient = patientenLijst[0];
 
     if (patient.knn_buren && patient.knn_buren.length > 0) {
-        console.log("Buren tabel: KNN data gevonden.");
-
         patient.knn_buren.forEach(buur => {
             const rij = document.createElement('tr');
             rij.className = "bg-white border-b hover:bg-gray-50";
@@ -554,16 +396,11 @@ function vulBurenTabel(patientenLijst) {
                         ${buur.traject}
                     </span>
                 </td>
-                <td class="px-4 py-2">
-                    Afstand: ${buur.afstand.toFixed(2)}
-                </td>
+                <td class="px-4 py-2">Afstand: ${buur.afstand.toFixed(2)}</td>
             `;
             tabelBody.appendChild(rij);
         });
-
     } else {
-        console.log("Buren tabel: Geen KNN data. Toon melding.");
-        
         meldingVeld.innerText = "Deze vergelijking is alleen beschikbaar wanneer de KWT/KNN Pipeline is gebruikt.";
         meldingVeld.classList.remove('hidden');
     }
@@ -589,11 +426,11 @@ function vulPatientSpecifiekeLegenda(patientLijst) {
         `;
         trajectBody.appendChild(rij);
     } else {
-        trajectBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs">Geen traject bekend</td></tr>';
+        trajectBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Uitgesloten van trajectbepaling</td></tr>';
     }
 
-    const uniekeStadia = new Set(patientLijst.map(p => p.ziektestadium));
-    
+    // Filter "Onbekend" eruit voor de legenda
+    const uniekeStadia = new Set(patientLijst.map(p => p.ziektestadium).filter(s => s && !s.startsWith("Onbekend")));
     const gesorteerdeStadia = Array.from(uniekeStadia).sort();
 
     if (gesorteerdeStadia.length > 0) {
@@ -609,9 +446,114 @@ function vulPatientSpecifiekeLegenda(patientLijst) {
             }
         });
     } else {
-        stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs">Geen stadia data</td></tr>';
+        stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Geen berekende stadia beschikbaar</td></tr>';
     }
 }
+
+
+// ==========================================================================
+// POPULATIE FIGUREN (DASHBOARD)
+// ==========================================================================
+
+let mijnTrajectTrendGrafiek = null;
+
+function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
+    let maxVisit = 0;
+    Object.values(gemiddeldeData).forEach(lijst => {
+        if (lijst) {
+            lijst.forEach(punt => {
+                if (punt.visit > maxVisit) maxVisit = punt.visit;
+            });
+        }
+    });
+
+    if (maxVisit === 0) {
+        schrijfMeldingInCanvas('TrajectTrendGrafiek', "Geen bruikbare populatiedata voor deze trendgrafiek.");
+        if (mijnTrajectTrendGrafiek) mijnTrajectTrendGrafiek.destroy();
+        return;
+    }
+
+    const labels = [];
+    for (let i = 1; i <= maxVisit; i++) { labels.push(`Visite ${i}`); }
+
+    const trajectConfig = [
+        { id: 'TR1', label: 'TR1', dash: [] },
+        { id: 'TR2', label: 'TR2', dash: [5, 5] },
+        { id: 'TR3', label: 'TR3', dash: [2, 2] },
+        { id: 'TR4', label: 'TR4', dash: [10, 5, 2, 5] }
+    ];
+
+    let alleDatasets = [];
+
+    trajectConfig.forEach(config => {
+        const rawData = gemiddeldeData[config.id]; 
+        const dataReeks1 = new Array(maxVisit).fill(null);
+        const dataReeks2 = new Array(maxVisit).fill(null);
+        let heeftData = false;
+
+        if (rawData && rawData.length > 0) {
+            rawData.forEach(punt => {
+                const index = punt.visit - 1; 
+                if (index >= 0 && index < maxVisit) {
+                    dataReeks1[index] = punt[feature1];
+                    dataReeks2[index] = punt[feature2];
+                    heeftData = true;
+                }
+            });
+        }
+
+        if (heeftData) {
+            alleDatasets.push({
+                label: `${config.id}: ${feature1}`, data: dataReeks1, 
+                borderColor: 'rgb(54, 162, 235)', backgroundColor: 'rgb(54, 162, 235)',
+                borderDash: config.dash, borderWidth: 2, yAxisID: 'y-left',
+                tension: 0.1, pointRadius: 6, pointHoverRadius: 8, spanGaps: true 
+            });
+
+            alleDatasets.push({
+                label: `${config.id}: ${feature2}`, data: dataReeks2,
+                borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgb(255, 99, 132)',
+                borderDash: config.dash, borderWidth: 2, yAxisID: 'y-right',
+                tension: 0.1, pointRadius: 6, pointHoverRadius: 8, spanGaps: true
+            });
+        }
+    });
+
+    const ctx = document.getElementById('TrajectTrendGrafiek');
+    if (!ctx) return;
+
+    if (mijnTrajectTrendGrafiek) mijnTrajectTrendGrafiek.destroy();
+
+    mijnTrajectTrendGrafiek = new Chart(ctx, {
+        type: 'line',
+        data: { labels: labels, datasets: alleDatasets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                title: { display: true, text: `Vergelijking Trajecten: ${feature1} (Links) vs ${feature2} (Rechts)` },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let val = context.parsed.y;
+                            if (val !== null && val !== undefined) return context.dataset.label + ': ' + val.toFixed(2);
+                            return '';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { display: true, title: { display: true, text: 'Visites' } },
+                'y-left': { type: 'linear', display: true, position: 'left', title: { display: true, text: feature1, color: 'rgb(54, 162, 235)' } },
+                'y-right': { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: feature2, color: 'rgb(255, 99, 132)' } }
+            }
+        }
+    });
+}
+
+// ==========================================================================
+// POPULATIESCATTER (PCA) - PER VISITE MET Z-SCORE
+// ==========================================================================
 
 let mijnPopulatieScatter = null;
 
@@ -622,87 +564,125 @@ function maakPopulatieScatter(patientenLijst) {
     if (mijnPopulatieScatter) mijnPopulatieScatter.destroy();
 
     const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
-    const uniekePatienten = {};
-    
-    patientenLijst.forEach(p => {
-        if (!uniekePatienten[p.patient_id]) {
-            uniekePatienten[p.patient_id] = { 
-                id: p.patient_id, 
-                traject: p.ziektetraject,
-                count: 0,
-                sums: { TJC:0, SJC:0, ESR:0, Leukocytes:0, HB:0, Thrombocytes:0 }
-            };
-        }
-        features.forEach(f => {
-            uniekePatienten[p.patient_id].sums[f] += Number(p[f] || 0);
-        });
-        uniekePatienten[p.patient_id].count++;
-    });
-
     const dataMatrix = [];
     const patientInfos = []; 
 
-    Object.values(uniekePatienten).forEach(p => {
-        const rij = features.map(f => p.sums[f] / p.count);
-        dataMatrix.push(rij);
-        patientInfos.push({ traject: p.traject, id: p.id });
-    });
+    // 1. DATA VERZAMELEN
+    patientenLijst.forEach(p => {
+        if (!p.ziektetraject || p.ziektetraject.startsWith("Onbekend")) return;
 
-    if (dataMatrix.length < 2) return;
+        let mistData = false;
+        const rij = [];
 
-    const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
-    const dataVoorPCA = transpose(dataMatrix);
+        for (const f of features) {
+            if (p[f] === null || p[f] === undefined || p[f] === "") {
+                mistData = true;
+                break; 
+            }
+            rij.push(Number(p[f]));
+        }
 
-    const vectors = PCA.getEigenVectors(dataVoorPCA);
-    const adData = PCA.computeAdjustedData(dataVoorPCA, vectors[0], vectors[1]);
-
-    const datasets = {
-        'TR1': { label: 'TR1', data: [], backgroundColor: 'green' },
-        'TR2': { label: 'TR2', data: [], backgroundColor: 'orange' },
-        'TR3': { label: 'TR3', data: [], backgroundColor: 'red' },
-        'TR4': { label: 'TR4', data: [], backgroundColor: 'purple' }
-    };
-
-    for (let i = 0; i < patientInfos.length; i++) {
-        const x = adData.adjustedData[0][i];
-        const y = adData.adjustedData[1][i];
-        const info = patientInfos[i];
-        
-        if (info.traject && datasets[info.traject]) {
-            datasets[info.traject].data.push({ 
-                x: x, 
-                y: y, 
-                patientId: info.id 
+        if (!mistData) {
+            dataMatrix.push(rij);
+            patientInfos.push({ 
+                id: p.patient_id, 
+                visit: p.visit, 
+                traject: p.ziektetraject 
             });
         }
+    });
+
+    // ====================================================================
+    // DE HARDE GRENS: Minimaal 6 visites nodig (omdat we 6 features hebben)
+    // ====================================================================
+    if (dataMatrix.length < 6) {
+        schrijfMeldingInCanvas('PopulatieScatter', `Te weinig data voor PCA. Minimaal 6 complete visites vereist (Gevonden: ${dataMatrix.length}).`);
+        return; // Stop de functie hier: we tekenen géén figuur.
     }
 
-    mijnPopulatieScatter = new Chart(ctx, {
-        type: 'scatter',
-        data: { datasets: Object.values(datasets) },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: { display: true, text: 'PCA Clustering (PC1 vs PC2)' },
-                legend: { position: 'top' },
-                
-                tooltip: {
-                    callbacks: {
-                        label: (context) => {
-                            const naam = context.raw.patientId;
-                            return `Patiënt: ${naam}`;
-                        },
-                        afterLabel: (context) => {
-                            return `(PC1: ${context.parsed.x.toFixed(1)}, PC2: ${context.parsed.y.toFixed(1)})`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Principal Component 1' } },
-                y: { title: { display: true, text: 'Principal Component 2' } }
+    try {
+        // 2. TRANSPONEREN
+        const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
+        const dataVoorPCA = transpose(dataMatrix);
+
+        // 3. Z-SCORE NORMALISATIE (Werkt nu altijd, want we hebben data > 6)
+        const genormaliseerdeData = dataVoorPCA.map(featureRij => {
+            const n = featureRij.length;
+            const mean = featureRij.reduce((sum, val) => sum + val, 0) / n;
+            const variantie = featureRij.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n;
+            const stdDev = Math.sqrt(variantie);
+
+            return featureRij.map(val => {
+                if (stdDev === 0) return 0; 
+                return (val - mean) / stdDev;
+            });
+        });
+
+        // 4. DE WISKUNDE
+        const vectors = PCA.getEigenVectors(genormaliseerdeData);
+        
+        if (!vectors || vectors.length < 2) {
+            schrijfMeldingInCanvas('PopulatieScatter', "Data heeft niet genoeg variatie om een PCA grafiek te tekenen.");
+            return;
+        }
+
+        const adData = PCA.computeAdjustedData(genormaliseerdeData, vectors[0], vectors[1]);
+
+        // 5. DATA KOPPELEN AAN GRAFIEK
+        const datasets = {
+            'TR1': { label: 'TR1', data: [], backgroundColor: 'green' },
+            'TR2': { label: 'TR2', data: [], backgroundColor: 'orange' },
+            'TR3': { label: 'TR3', data: [], backgroundColor: 'red' },
+            'TR4': { label: 'TR4', data: [], backgroundColor: 'purple' }
+        };
+
+        for (let i = 0; i < patientInfos.length; i++) {
+            const x = adData.adjustedData[0][i];
+            const y = adData.adjustedData[1][i];
+            const info = patientInfos[i];
+            
+            if (info.traject && datasets[info.traject]) {
+                datasets[info.traject].data.push({ 
+                    x: x, 
+                    y: y, 
+                    patientId: info.id,
+                    visitNummer: info.visit 
+                });
             }
         }
-    });
+
+        const actieveDatasets = Object.values(datasets).filter(ds => ds.data.length > 0);
+
+        // 6. GRAFIEK TEKENEN
+        mijnPopulatieScatter = new Chart(ctx, {
+            type: 'scatter',
+            data: { datasets: actieveDatasets },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'PCA Clustering (Genormaliseerd met Z-score)' },
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const naam = context.raw.patientId;
+                                const vis = context.raw.visitNummer;
+                                return `Patiënt: ${naam} (Visite ${vis})`;
+                            },
+                            afterLabel: (context) => `(PC1: ${context.parsed.x.toFixed(2)}, PC2: ${context.parsed.y.toFixed(2)})`
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Principal Component 1' } },
+                    y: { title: { display: true, text: 'Principal Component 2' } }
+                }
+            }
+        });
+        
+    } catch (e) {
+        console.error("PCA Fout:", e);
+        schrijfMeldingInCanvas('PopulatieScatter', "Kan PCA niet berekenen door een wiskundige fout in de data.");
+    }
 }

@@ -29,6 +29,11 @@ const INDIVIDUELE_NUMERIEKE_VELDEN = [
     'Leukocytes', 'HB', 'Thrombocytes'
 ];
 
+const VERWACHTE_MODEL_HEADERS = [
+    'ModelNaam', 'Target', 
+    'TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'
+];
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const settingsKnop = document.getElementById('settings-knop');
@@ -53,6 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const csvErrorBox = document.getElementById('csv-error-box');
     const csvErrorMessage = document.getElementById('csv-error-message');
 
+    // model CSV 
+    const modelCsvInput = document.getElementById('model_csv_file');
+
 
     if (csvForm) {
         csvForm.addEventListener('submit', handleCsvSubmit);
@@ -61,6 +69,93 @@ document.addEventListener('DOMContentLoaded', () => {
     if (singlePatientForm) {
         singlePatientForm.addEventListener('submit', handleSinglePatientSubmit);
     }
+
+    function handleCsvSubmit(event) {
+        event.preventDefault();
+        csvErrorBox.classList.add('hidden');
+        csvErrorMessage.innerText = '';
+
+        // 1. EERST HET MODEL CSV LEZEN (ALS HET ER IS)
+        if (modelCsvInput && modelCsvInput.files.length > 0) {
+            const modelFile = modelCsvInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // Sla de ruwe tekst op in sessie. Resultaten.js parset het later.
+                sessionStorage.setItem('custom_model_config', e.target.result);
+                console.log("Custom model config opgeslagen.");
+                
+                // Nu pas de patiënten data verwerken
+                verwerkPatientenCSV(); 
+            };
+            reader.readAsText(modelFile);
+        } else {
+            // Geen model geüpload? Verwijder oude config en ga door.
+            sessionStorage.removeItem('custom_model_config');
+            verwerkPatientenCSV();
+        }
+    }
+
+    function verwerkPatientenCSV() {
+        if (!csvFileInput.files || csvFileInput.files.length === 0) {
+            showCsvError("Selecteer alstublieft een patiënten CSV-bestand.");
+            return;
+        }
+        
+        const file = csvFileInput.files[0];
+        
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            error: (err) => showCsvError(`Fout: ${err.message}`),
+            complete: (results) => {
+                try {
+                    const data = results.data;
+                    let gevalideerdeData = [];
+
+                    // Loop door de rijen
+                    for (let i = 0; i < data.length; i++) {
+                        const rij = data[i];
+                        let nieuweRij = {};
+                        
+                        // Mapping toepassen
+                        for (const key in KOLOM_MAPPING) {
+                            nieuweRij[KOLOM_MAPPING[key]] = rij[key];
+                        }
+
+                        // VERSOEPELDE VALIDATIE:
+                        // Lege cellen worden null, geen error meer!
+                        for (const colName of INDIVIDUELE_NUMERIEKE_VELDEN) {
+                            let waarde = nieuweRij[colName];
+                            
+                            if (waarde === null || waarde === undefined || waarde.trim() === "") {
+                                nieuweRij[colName] = null; // Opslaan als null
+                            } else {
+                                if (isNaN(parseFloat(waarde))) {
+                                    // Ongeldige tekst blijft wel een error
+                                    showCsvError(`Rij ${i + 2}: '${colName}' is geen getal.`);
+                                    return;
+                                }
+                                nieuweRij[colName] = parseFloat(waarde);
+                            }
+                        }
+                        gevalideerdeData.push(nieuweRij);
+                    }
+
+                    sessionStorage.setItem('patient_data_json', JSON.stringify(gevalideerdeData));
+                    sessionStorage.setItem('data_loaded', 'true');
+                    sessionStorage.setItem('model_voorkeur', geselecteerdeModel);
+                    
+                    window.location.href = 'resultaten.html';
+
+                } catch (e) {
+                    showCsvError(`Validatie fout: ${e.message}`);
+                }
+            }
+        });
+    }
+    
+    // ... (rest van je code: single patient handler etc) ...
 
     function checkSessionData() {
         if (sessionStorage.getItem('data_loaded') === 'true') {
@@ -88,92 +183,74 @@ document.addEventListener('DOMContentLoaded', () => {
     // CSV INPUT HIERO
     
     function handleCsvSubmit(event) {
-        event.preventDefault(); // Voorkom pagina herlading
+        event.preventDefault(); 
         
-        // Reset de error box
         csvErrorBox.classList.add('hidden');
         csvErrorMessage.innerText = '';
-        
-        // cheken of  er een bestand is en of het CSV is !>!
-        if (!csvFileInput.files || csvFileInput.files.length === 0) {
-            showCsvError("Selecteer alstublieft een CSV-bestand.");
-            return;
-        }
-        
-        const file = csvFileInput.files[0];
 
-        if (!file.name.endsWith('.csv')) {
-            showCsvError("Het geüploade bestand moet een .csv-bestand zijn.");
-            return;
-        }
+        // STAP A: MODEL CSV VERWERKEN (ALS HET ER IS)
+        if (modelCsvInput && modelCsvInput.files.length > 0) {
+            const modelFile = modelCsvInput.files[0];
 
-        Papa.parse(file, {
-            header: true,  // er is een header -> TRUE
-            skipEmptyLines: true, // skip lege rijen
-            
-            error: (err) => {
-                showCsvError(`Er ging iets mis met het lezen van het bestand: ${err.message}`);
-            },
-            
-            complete: (results) => {
-                try {
-                    
-                    const data = results.data; // Dit is een lijst van objecten/rijen
-                    const gevondenKolommen = results.meta.fields; // Dit is de lijst met kolomnamen
-
-                    let ontbrekendeKolommen = [];
-                    for (const verwachteKolom of VERWACHTE_KOLOMMEN_CSV) {
-                        if (!gevondenKolommen.includes(verwachteKolom)) {
-                            ontbrekendeKolommen.push(verwachteKolom);
-                        }
-                    }
-
-                    if (ontbrekendeKolommen.length > 0) {
-                        showCsvError(`De CSV mist de volgende kolommen: ${ontbrekendeKolommen.join(', ')}`);
-                        return;
-                    }
-
-    let gevalideerdeData = [];
-    for (let i = 0; i < data.length; i++) {
-        const rij = data[i]; 
-        
-        // HERNOEM DE RIJ
-        let nieuweRij = {};
-        for (const key in KOLOM_MAPPING) {
-            nieuweRij[KOLOM_MAPPING[key]] = rij[key];
-        }
-
-        for (const colName of INDIVIDUELE_NUMERIEKE_VELDEN) { 
-            
-            const waarde = nieuweRij[colName]; 
-            
-            if (waarde === null || waarde === undefined || waarde === "") {
-                showCsvError(`Rij ${i + 2} heeft een lege waarde in kolom '${colName}'.`);
+            // Check 1: Extensie
+            if (!modelFile.name.toLowerCase().endsWith('.csv')) {
+                showCsvError("Model bestand fout: Het moet een .csv bestand zijn.");
                 return;
             }
-            if (isNaN(parseFloat(waarde))) {
-                showCsvError(`Rij ${i + 2}, kolom '${colName}' bevat een ongeldige waarde.`);
-                return;
-            }
-        }
-    
-        gevalideerdeData.push(nieuweRij);
-    }
 
-                    console.log("CSV Validatie succesvol!", gevalideerdeData);
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const csvTekst = e.target.result;
 
-                    sessionStorage.setItem('patient_data_json', JSON.stringify(gevalideerdeData));
-                    sessionStorage.setItem('data_loaded', 'true');
-                    sessionStorage.setItem('model_voorkeur', geselecteerdeModel);
-                    
-                    window.location.href = 'resultaten.html'; 
-                } catch (e) {
-                    showCsvError(`Onverwachte fout na het parsen: ${e.message}`);
+                // Check 2: Inhoud Parsen & Valideren
+                // We gebruiken Papa Parse om de string te analyseren
+                const parseResult = Papa.parse(csvTekst, {
+                    header: true,
+                    skipEmptyLines: true
+                });
+
+                // Is de CSV leesbaar?
+                if (parseResult.errors.length > 0) {
+                    showCsvError(`Model CSV leesfout: ${parseResult.errors[0].message}`);
+                    return;
                 }
-            }
-        });
-    }
 
+                // Check 3: Headers controleren
+                const gevondenHeaders = parseResult.meta.fields || [];
+                const missendeHeaders = VERWACHTE_MODEL_HEADERS.filter(h => !gevondenHeaders.includes(h));
+
+                if (missendeHeaders.length > 0) {
+                    showCsvError(`Model CSV ongeldig. Mist kolommen: ${missendeHeaders.join(', ')}`);
+                    return;
+                }
+
+                // Check 4: Is er data? (Minimaal 1 model regel)
+                if (parseResult.data.length === 0) {
+                    showCsvError("Model CSV is leeg. Voeg minimaal één modelregel toe.");
+                    return;
+                }
+
+                // ALLES OK! Opslaan en doorgaan.
+                console.log("Model CSV gevalideerd en goedgekeurd.");
+                sessionStorage.setItem('custom_model_config', csvTekst);
+                
+                verwerkPatientenCSV(); 
+            };
+            
+            reader.onerror = function() {
+                showCsvError("Fout bij lezen van model bestand.");
+            };
+
+            reader.readAsText(modelFile);
+
+        } else {
+            // Geen model geüpload? Prima, oude config weg en doorgaan met default.
+            sessionStorage.removeItem('custom_model_config');
+            verwerkPatientenCSV();
+        }
+    }
+    
     // INPUT INDIVIDUELE PATIEËNT HIERO
     
     function handleSinglePatientSubmit(event) {

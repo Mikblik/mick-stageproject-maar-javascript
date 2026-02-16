@@ -66,7 +66,7 @@ PCA -> 2 opties        -> 1 alle missing values patienten verwijderd <-- verwijd
 
 - ander punt. -> waarop baseer ik de PCA het beste - > op dit moment is het de gemiddelde 
 van alle klinische waardes van de visites bij elkaar en dat vergelijkt per patient. (klinkt niet goed)
--> beter is alleen baseline klinische waardes? < Elke visite er in zetten van elke patiënt> 
+-> beter is alleen baseline klinische waardes? < Elke visite er in zetten van elke patiënt > 
 
 -> data normaliseren voor PCA is nodig toch? want Thrombocyten is 1000x zo groot als andere dingen
     -> zag z score van maken is dit beste? moet verder ff in verdiepen dan < goede optie > 
@@ -80,6 +80,50 @@ van alle klinische waardes van de visites bij elkaar en dat vergelijkt per patie
                          -> eerdere figuren aanpassen dat ze met missing values kunnen werken
 
 ------------------------------------------------------------------------<><><>
+
+Meeting 16/02/2026
+
+Nieuwe aanpassingen ->
+-> Kan nu custom csv model toevoegen
+-> kan nu missing data hebben en de figuren zullen niet breken 
+-> lijn figuur bij missing data zal bij 0 naar beneden schieten 
+    en bij missing stoppen op dat punt en daarna verder
+
+-> figuren zullen duidelijk aangeven nu als er te weinig data
+->heatmaps kunnen nu 0 en *niks* laten zien
+
+-> PCA is veranderd. -> laat nu elke patient zijn visite zien MAAR wanneer iets mist = DELETED uit figuur.
+-> laat alleen PCA zien bij minimaal  6 complete visites -> MEER of minder? of goed? (dacht 6 datapunten dus 6 visite is ok?)
+-> PCA is genormaliseerd -> gebruikt Z score
+
+-> custom csv model voorbeeld laten zien 
+    -> werkt nu als waterval van beste naar slechtere
+
+planning  ->
+    verder gaan met nieuwe figuren
+
+    de niet gebruikte patienten / patienten die iets missen apart opslaan ->
+        knopje maken om naar excel te schrijven? (denk duidelijker dan tabel in pagina zelf.)
+
+    moet op 26 feb terugkomdag 3 op school met presentatie / huiswerk ding, dus dan ben ik er niet.
+
+    moet ook nog een dag dit voorbereiden met iemand 
+    dus deze week of  
+    volgende week ben ik er 1 dag niet 
+    (ligt aan wanneer beide kunnen -> moet nog plannen met hem -> wacht op mail van hem)
+
+    deadline tussenraportage 4 april nog lang niet maar alvast genoteerd
+
+nog nodig -> 
+    die meerdere modellen (maar geen haast gebruik nu placeholder)
+
+------------------------------------------------------------------------<><><>
+
+
+
+
+
+
 
 
 
