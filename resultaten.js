@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const patientenLijst = JSON.parse(dataString);
     console.log("Data succesvol geladen uit sessionStorage:", patientenLijst);
 
+    const dataRapport = evalueerDataKwaliteit(patientenLijst);
+    toonDataKwaliteitMelding(dataRapport);
+
     // ========================================================================
     // Sla alle elementen in een keer op.
     // ========================================================================
@@ -274,7 +277,118 @@ document.addEventListener('DOMContentLoaded', () => {
     if (patientenLijst.length > 1) {
         console.log("Meerdere patiënten gevonden, PCA Scatter tekenen...");
         maakPopulatieScatter(patientenLijst);
+        maakPopulatieStadiaHeatmap(patientenLijst);
+        maakPopulatieTrajectHeatmap(patientenLijst);
     }
 
+    // ==========================================================================
+// DATA KWALITEIT & RAPPORTAGE
+// ==========================================================================
 
+function evalueerDataKwaliteit(patientenLijst) {
+    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
+    const patientStatus = {};
+    const incompleteVisitesData = [];
+
+    let totaalVisitesMetMissendeData = 0;
+
+    // 1. Loop door alle data en verzamel de statistieken
+    patientenLijst.forEach(p => {
+        const id = p.patient_id;
+        
+        // Maak de patiënt aan in ons rapportage-object als deze nog niet bestaat
+        if (!patientStatus[id]) {
+            patientStatus[id] = { totaalVisites: 0, incompleteVisites: 0 };
+        }
+
+        patientStatus[id].totaalVisites++;
+
+        let isIncomplete = false;
+        let mistVelden = [];
+        
+        // Controleer op missende features
+        features.forEach(f => {
+            if (p[f] === null || p[f] === undefined || p[f] === "") {
+                isIncomplete = true;
+                mistVelden.push(f);
+            }
+        });
+
+        // Als er iets mist, sla de details apart op
+        if (isIncomplete) {
+            patientStatus[id].incompleteVisites++;
+            totaalVisitesMetMissendeData++;
+            incompleteVisitesData.push({
+                patient_id: id,
+                visit: p.visit,
+                mist: mistVelden
+            });
+        }
+    });
+
+    // Bereken de totalen op patient lvl
+    let patientenMetMinimaal1MissendeVisite = 0;
+    let patientenMetAlleVisitesMissend = 0;
+
+    for (const id in patientStatus) {
+        const stats = patientStatus[id];
+        if (stats.incompleteVisites > 0) {
+            patientenMetMinimaal1MissendeVisite++;
+            // Check of alles mist
+            if (stats.incompleteVisites === stats.totaalVisites) {
+                patientenMetAlleVisitesMissend++;
+            }
+        }
+    }
+
+    //  Sla de ongebruikte/incoompete data apart op in de sessie!
+    sessionStorage.setItem('uitgesloten_data_log', JSON.stringify(incompleteVisitesData));
+
+    // Geef het rapportage object terug
+    return {
+        totaalMissendeVisites: totaalVisitesMetMissendeData,
+        minimaalEénMissend: patientenMetMinimaal1MissendeVisite,
+        allesMissend: patientenMetAlleVisitesMissend,
+        totaalPatienten: Object.keys(patientStatus).length,
+        details: incompleteVisitesData
+    };
+}
+
+function toonDataKwaliteitMelding(rapport) {
+    // Als de data 100% perfect is, tonen we geen melding
+    if (rapport.totaalMissendeVisites === 0) return;
+
+    // maak Tailwind waarschuwingsbanner aan
+    const banner = document.createElement('div');
+    banner.className = "bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 shadow-sm rounded-r-md";
+    
+    banner.innerHTML = `
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">
+                    Datakwaliteit Rapportage
+                </h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>${rapport.totaalMissendeVisites} visites</strong> in totaal missen klinische data.</li>
+                        <li><strong>${rapport.minimaalEénMissend} van de ${rapport.totaalPatienten} patiënten</strong> mist data in minstens één visite.</li>
+                        <li><strong>${rapport.allesMissend} patiënten</strong> missen data in al hun visites.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 
+    const allePatientenView = document.getElementById('alle-patienten-view');
+    if (allePatientenView) {
+        allePatientenView.insertBefore(banner, allePatientenView.firstChild);
+    }
+}
 });
+
