@@ -39,13 +39,11 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
     const getFeatureData = (featureNaam) => {
         if (featureNaam === 'Ziektestadium') {
             return data.map(p => {
-                // FIX: Als stadium onbekend is, teken geen stip
                 if (!p.ziektestadium || p.ziektestadium.startsWith("Onbekend")) return null;
                 return Number(p.ziektestadium.replace('L', ''));
             });
         } else {
             return data.map(p => {
-                // FIX: Voorkom dat Number(null) een 0 wordt!
                 if (p[featureNaam] === null || p[featureNaam] === undefined || p[featureNaam] === "") return null;
                 return Number(p[featureNaam]);
             });
@@ -57,6 +55,19 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
 
     const ctx = document.getElementById('ComboGrafiek');
     if (!ctx) return;
+
+    // Officiële Chart.js logica om gaten (missende visites) te detecteren
+    const spanGapsChecker = (ctx, stippelPatroon) => {
+        // Veiligheidscheck of p0 en p1 bestaan
+        if (!ctx.p0 || !ctx.p1) return undefined;
+        
+        // 1. Chart.js 'skip' flag (de officiële methode)
+        // 2. Extra veiligheid: als het index-verschil groter is dan 1, ontbreekt er ook data
+        if (ctx.p0.skip || ctx.p1.skip || (ctx.p1DataIndex - ctx.p0DataIndex > 1)) {
+            return stippelPatroon;
+        }
+        return undefined; // Gewone vaste lijn
+    };
 
     mijnComboGrafiek = new Chart(ctx, {
         type: 'line',
@@ -70,7 +81,10 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
                     backgroundColor: 'rgb(54, 162, 235)',
                     yAxisID: 'y-axis-left', 
                     tension: 0.1,
-                    spanGaps: false 
+                    spanGaps: true, // Overbrug missende data
+                    segment: {
+                        borderDash: ctx => spanGapsChecker(ctx, [5, 5])
+                    }
                 },
                 {
                     label: featureRechts, 
@@ -79,7 +93,10 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
                     backgroundColor: 'rgb(255, 99, 132)',
                     yAxisID: 'y-axis-right', 
                     tension: 0.1,
-                    spanGaps: false
+                    spanGaps: true, // Overbrug missende data
+                    segment: {
+                        borderDash: ctx => spanGapsChecker(ctx, [5, 5])
+                    }
                 }
             ]
         },
@@ -106,7 +123,6 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
         }
     });
 }
-
 
 function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
     if (mijnKansenGrafiek) {
@@ -608,10 +624,15 @@ function maakPopulatieScatter(patientenLijst) {
         // 3. Z-SCORE NORMALISATIE (Werkt nu altijd, want we hebben data > 6)
         const genormaliseerdeData = dataVoorPCA.map(featureRij => {
             const n = featureRij.length;
+
+            // gemiddelde berekenenn
             const mean = featureRij.reduce((sum, val) => sum + val, 0) / n;
+
+            // standaaardafwijking
             const variantie = featureRij.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n;
             const stdDev = Math.sqrt(variantie);
 
+            // Z score 
             return featureRij.map(val => {
                 if (stdDev === 0) return 0; 
                 return (val - mean) / stdDev;
@@ -685,4 +706,246 @@ function maakPopulatieScatter(patientenLijst) {
         console.error("PCA Fout:", e);
         schrijfMeldingInCanvas('PopulatieScatter', "Kan PCA niet berekenen door een wiskundige fout in de data.");
     }
+}
+
+// ==========================================================================
+// POPULATIE HEATMAPS (ALLE PATIËNTEN)
+// ==========================================================================
+
+let mijnPopulatieStadiaHeatmap = null;
+
+function maakPopulatieStadiaHeatmap(patientenLijst) {
+    const chartContainer = document.querySelector("#populatieStadiaHeatmapChart");
+    if (!chartContainer) return;
+
+    if (mijnPopulatieStadiaHeatmap) {
+        mijnPopulatieStadiaHeatmap.destroy();
+    }
+    chartContainer.innerHTML = '';
+
+    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
+    const geaggregeerdeData = {};
+
+    // 1. Data groeperen en optellen per stadium
+    patientenLijst.forEach(p => {
+        const stadium = p.ziektestadium;
+        if (stadium && !stadium.startsWith("Onbekend") && REF_GEM_PER_STADIA[stadium]) {
+            if (!geaggregeerdeData[stadium]) {
+                geaggregeerdeData[stadium] = { counts: {}, sums: {} };
+                features.forEach(f => { geaggregeerdeData[stadium].counts[f] = 0; geaggregeerdeData[stadium].sums[f] = 0; });
+            }
+            
+            features.forEach(feat => {
+                if (p[feat] !== null && p[feat] !== undefined && p[feat] !== "") {
+                    geaggregeerdeData[stadium].sums[feat] += Number(p[feat]);
+                    geaggregeerdeData[stadium].counts[feat]++;
+                }
+            });
+        }
+    });
+
+    const gevondenStadia = Object.keys(geaggregeerdeData).sort(); // Bijv: L1, L2, L4
+
+    if (gevondenStadia.length === 0) {
+        schrijfMeldingInDiv("populatieStadiaHeatmapChart", "Geen geldige ziektestadia data gevonden voor de populatie heatmap.");
+        return;
+    }
+
+    const alleSeries = [];
+
+    // 2. Gemiddeldes berekenen en formatten voor ApexCharts
+    gevondenStadia.forEach(stadium => {
+        const refWaardes = REF_GEM_PER_STADIA[stadium];
+        const rowData = [];
+
+        features.forEach(feat => {
+            const count = geaggregeerdeData[stadium].counts[feat];
+            if (count === 0) {
+                rowData.push({ x: feat, y: null });
+                return;
+            }
+
+            const gemVal = geaggregeerdeData[stadium].sums[feat] / count;
+            const refVal = refWaardes[feat];
+
+            if ((feat === 'HB' || feat === 'Thrombocytes' || feat === 'Leukocytes') && gemVal === 0) {
+                rowData.push({ x: feat, y: null });
+                return; 
+            }
+
+            const ratio = gemVal / (refVal || 1);
+
+            rowData.push({
+                x: feat,
+                y: ratio.toFixed(2),
+                goals: [{ value: gemVal, strokeHeight: 0 }, { value: refVal }]
+            });
+        });
+
+        alleSeries.push({ name: `Stadium ${stadium}`, data: rowData });
+    });
+
+    const options = {
+        series: alleSeries.reverse(), // Reverse zorgt dat L1 bovenaan staat
+        chart: { height: 350, type: 'heatmap', toolbar: { show: false } },
+        plotOptions: {
+            heatmap: {
+                shadeIntensity: 0.5, radius: 2,
+                colorScale: {
+                    ranges: [
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul / Zeer laag' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lager' },
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normaal' },
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Hoger' }
+                    ]
+                }
+            }
+        },
+        dataLabels: { enabled: true, style: { colors: ['#000'] } },
+        title: { text: `Populatie: Gemiddelde per Stadium vs Referentie` },
+        xaxis: { position: 'bottom', tooltip: { enabled: false } },
+        tooltip: {
+            custom: function({series, seriesIndex, dataPointIndex, w}) {
+                const data = w.config.series[seriesIndex].data[dataPointIndex];
+                const ratio = data.y;
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white shadow border">Geen data ingevuld</div>';
+
+                const patVal = data.goals && data.goals[0] ? data.goals[0].value.toFixed(1) : "?";
+                const refVal = data.goals && data.goals[1] ? data.goals[1].value.toFixed(1) : "?";
+                
+                return `
+                    <div class="bg-white p-2 border border-gray-200 shadow-lg text-sm text-black">
+                        <div class="font-bold mb-1">${w.globals.labels[dataPointIndex]}</div>
+                        <div>Ratio: <strong>${ratio}x</strong></div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            Populatie Gem.: ${patVal} <br>
+                            Referentie: ${refVal}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    };
+
+    mijnPopulatieStadiaHeatmap = new ApexCharts(chartContainer, options);
+    mijnPopulatieStadiaHeatmap.render();
+}
+
+
+let mijnPopulatieTrajectHeatmap = null;
+
+function maakPopulatieTrajectHeatmap(patientenLijst) {
+    const chartContainer = document.querySelector("#populatieTrajectHeatmapChart");
+    if (!chartContainer) return;
+
+    if (mijnPopulatieTrajectHeatmap) {
+        mijnPopulatieTrajectHeatmap.destroy();
+    }
+    chartContainer.innerHTML = '';
+
+    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
+    const geaggregeerdeData = {};
+
+    // 1. Data groeperen. Let op: Voor trajecten pakken we ALLEEN Visite 1 (Baseline)
+    patientenLijst.forEach(p => {
+        const traject = p.ziektetraject;
+        if (traject && !traject.startsWith("Onbekend") && REF_TRAJECT_BASELINE[traject] && Number(p.visit) === 1) {
+            if (!geaggregeerdeData[traject]) {
+                geaggregeerdeData[traject] = { counts: {}, sums: {} };
+                features.forEach(f => { geaggregeerdeData[traject].counts[f] = 0; geaggregeerdeData[traject].sums[f] = 0; });
+            }
+            
+            features.forEach(feat => {
+                if (p[feat] !== null && p[feat] !== undefined && p[feat] !== "") {
+                    geaggregeerdeData[traject].sums[feat] += Number(p[feat]);
+                    geaggregeerdeData[traject].counts[feat]++;
+                }
+            });
+        }
+    });
+
+    const gevondenTrajecten = Object.keys(geaggregeerdeData).sort(); 
+
+    if (gevondenTrajecten.length === 0) {
+        schrijfMeldingInDiv("populatieTrajectHeatmapChart", "Geen Baseline (Visite 1) data gevonden om trajecten te groeperen.");
+        return;
+    }
+
+    const alleSeries = [];
+
+    gevondenTrajecten.forEach(traject => {
+        const refWaardes = REF_TRAJECT_BASELINE[traject];
+        const rowData = [];
+
+        features.forEach(feat => {
+            const count = geaggregeerdeData[traject].counts[feat];
+            if (count === 0) {
+                rowData.push({ x: feat, y: null });
+                return;
+            }
+
+            const gemVal = geaggregeerdeData[traject].sums[feat] / count;
+            const refVal = refWaardes[feat];
+
+            if ((feat === 'HB' || feat === 'Thrombocytes' || feat === 'Leukocytes') && gemVal === 0) {
+                rowData.push({ x: feat, y: null });
+                return; 
+            }
+
+            const ratio = gemVal / (refVal || 1);
+
+            rowData.push({
+                x: feat,
+                y: ratio.toFixed(2),
+                goals: [{ value: gemVal, strokeHeight: 0 }, { value: refVal }]
+            });
+        });
+
+        alleSeries.push({ name: `${traject} (Baseline)`, data: rowData });
+    });
+
+    const options = {
+        series: alleSeries.reverse(), 
+        chart: { height: 300, type: 'heatmap', toolbar: { show: false } },
+        plotOptions: {
+            heatmap: {
+                shadeIntensity: 0.5, radius: 2,
+                colorScale: {
+                    ranges: [
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lager' }, 
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normaal' },    
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Hoger' } 
+                    ]
+                }
+            }
+        },
+        dataLabels: { enabled: true, style: { colors: ['#000'] } },
+        title: { text: `Populatie: Traject Baseline vs Referentie` },
+        xaxis: { position: 'bottom', tooltip: { enabled: false } },
+        tooltip: {
+            custom: function({series, seriesIndex, dataPointIndex, w}) {
+                const data = w.config.series[seriesIndex].data[dataPointIndex];
+                const ratio = data.y;
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white border">Geen data ingevuld</div>';
+                
+                const patVal = data.goals[0].value.toFixed(1);
+                const refVal = data.goals[1].value.toFixed(1);
+                
+                return `
+                    <div class="bg-white p-2 border border-gray-200 shadow-lg text-sm text-black">
+                        <div class="font-bold mb-1">${w.globals.labels[dataPointIndex]}</div>
+                        <div>Ratio: <strong>${ratio}x</strong></div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            Populatie Gem.: ${patVal} <br>
+                            Baseline Ref.: ${refVal}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    };
+
+    mijnPopulatieTrajectHeatmap = new ApexCharts(chartContainer, options);
+    mijnPopulatieTrajectHeatmap.render();
 }

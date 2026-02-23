@@ -1,0 +1,25 @@
+ModelNaam,Target,TJC,SJC,ESR,Leukocytes,HB,Thrombocytes
+Goud (Alles),L1,-0.777,-1.032,-0.209,-0.516,1.68,-0.004
+Goud (Alles),L2,-0.595,-0.699,0.165,-0.096,0.329,-0.002
+Goud (Alles),L3,-0.569,-0.808,-0.203,1.302,-0.271,0
+Goud (Alles),L4,0.619,0.359,-0.188,-0.204,0.858,-0.004
+Goud (Alles),L5,0.296,0.472,0.087,0.005,-0.1,-0.001
+Goud (Alles),L6,-0.151,0.025,0.329,0.052,-1.364,0.001
+Goud (Alles),L7,0.89,1.475,-0.042,0.108,-0.65,-0.01
+Goud (Alles),L8,0.286,0.208,0.06,-0.65,-0.481,0.02
+Zilver (Geen SJC),L1,-0.95,,-0.25,-0.55,1.70,-0.005
+Zilver (Geen SJC),L2,-0.65,,-0.15,-0.10,0.35,-0.003
+Zilver (Geen SJC),L3,-0.60,,-0.22,1.35,-0.30,0
+Zilver (Geen SJC),L4,0.70,,-0.20,-0.22,0.90,-0.005
+Zilver (Geen SJC),L5,0.35,,0.10,0.01,-0.15,-0.002
+Zilver (Geen SJC),L6,-0.10,,0.35,0.06,-1.40,0.002
+Zilver (Geen SJC),L7,1.10,,-0.05,0.12,-0.70,-0.012
+Zilver (Geen SJC),L8,0.35,,0.08,-0.68,-0.50,0.025
+Brons (Geen SJC en ESR),L1,-1.05,,,-0.60,1.75,-0.006
+Brons (Geen SJC en ESR),L2,-0.75,,,-0.15,0.40,-0.004
+Brons (Geen SJC en ESR),L3,-0.70,,,1.40,-0.35,0
+Brons (Geen SJC en ESR),L4,0.80,,,-0.25,0.95,-0.006
+Brons (Geen SJC en ESR),L5,0.45,,,0.05,-0.20,-0.003
+Brons (Geen SJC en ESR),L6,-0.20,,,0.10,-1.45,0.003
+Brons (Geen SJC en ESR),L7,1.20,,,0.15,-0.75,-0.015
+Brons (Geen SJC en ESR),L8,0.45,,,-0.75,-0.55,0.030

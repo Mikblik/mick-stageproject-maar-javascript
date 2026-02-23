@@ -6,42 +6,31 @@
  * 1. ZIEKTESTADIA MODEL (WATERVAL)
  * Bepaalt L1-L8. Flexibel met missing values.
  */
+// ==========================================================================
+// BESTAND: modellen.js
+// ==========================================================================
+
+/**
+ * 1. ZIEKTESTADIA MODEL (WATERVAL)
+ * Bepaalt L1-L8 op basis van het ingeladen 'modellen.csv' bestand.
+ */
 function ziektestadiamodel(patientenLijst) {
     console.log("--- Start Ziektestadia Model (Waterval) ---");
 
-    // A. DEFINIEER HET STANDAARD MODEL
-    const DEFAULT_ZIEKTESTADIA_MODEL = [
-        {
-            naam: "Default (Alles)",
-            // Lijst van features die NIET null mogen zijn voor dit model
-            required: ["TJC", "SJC", "ESR", "Leukocytes", "HB", "Thrombocytes"],
-            
-            // De formules per stadium (L1..L8)
-            targets: {
-                L1: { TJC: -0.777, SJC: -1.032, ESR: -0.209, Leukocytes: -0.516, HB: 1.68, Thrombocytes: -0.004 },
-                L2: { TJC: -0.595, SJC: -0.699, ESR: 0.165, Leukocytes: -0.096, HB: 0.329, Thrombocytes: -0.002 },
-                L3: { TJC: -0.569, SJC: -0.808, ESR: -0.203, Leukocytes: 1.302, HB: -0.271, Thrombocytes: 0 },
-                L4: { TJC: 0.619, SJC: 0.359, ESR: -0.188, Leukocytes: -0.204, HB: 0.858, Thrombocytes: -0.004 },
-                L5: { TJC: 0.296, SJC: 0.472, ESR: 0.087, Leukocytes: 0.005, HB: -0.1, Thrombocytes: -0.001 },
-                L6: { TJC: -0.151, SJC: 0.025, ESR: 0.329, Leukocytes: 0.052, HB: -1.364, Thrombocytes: 0.001 },
-                L7: { TJC: 0.890, SJC: 1.475, ESR: -0.042, Leukocytes: 0.108, HB: -0.65, Thrombocytes: -0.01 },
-                L8: { TJC: 0.286, SJC: 0.208, ESR: 0.060, Leukocytes: -0.650, HB: -0.481, Thrombocytes: 0.02 }
-            }
-        }
-    ];
-
-    // B. INITIALISEER DE MODEL LIJST
-    let modelLijst = DEFAULT_ZIEKTESTADIA_MODEL;
+    let modelLijst = [];
     
-    // Check of er een custom CSV is geüpload in app.js
+    // Haal de CSV string op die app.js op de achtergrond heeft ingeladen
     const customCsv = sessionStorage.getItem('custom_model_config');
+    
     if (customCsv) {
-        console.log("Custom model config gevonden! Parsen...");
         try {
             modelLijst = parseModelConfig(customCsv);
+            console.log(` Succes: ${modelLijst.length} modellen geladen uit modellen.csv`);
         } catch (e) {
-            console.error("Fout bij parsen custom model, fallback naar default:", e);
+            console.error(" Fout bij het vertalen van modellen.csv:", e);
         }
+    } else {
+        console.error(" Geen modellen.csv gevonden! Controleer of het bestand in de juiste map staat. Alle patiënten krijgen status 'Onbekend'.");
     }
 
     // C. LOOP DOOR PATIËNTEN
@@ -52,9 +41,9 @@ function ziektestadiamodel(patientenLijst) {
         for (const model of modelLijst) {
             let heeftAlles = true;
             
-            // Check of patiënt alle benodigde data heeft voor dit model
+            // Check of patiënt alle benodigde data heeft voor dit specifieke model
             for (const feature of model.required) {
-                if (patient[feature] === null || patient[feature] === undefined) {
+                if (patient[feature] === null || patient[feature] === undefined || patient[feature] === "") {
                     heeftAlles = false;
                     break; 
                 }
@@ -62,7 +51,7 @@ function ziektestadiamodel(patientenLijst) {
             
             if (heeftAlles) {
                 gekozenModel = model;
-                break; // Gevonden! Stop met zoeken naar slechtere modellen.
+                break; // Gevonden! Stop met zoeken naar mindere modellen.
             }
         }
 
@@ -70,9 +59,8 @@ function ziektestadiamodel(patientenLijst) {
         if (gekozenModel) {
             const resultaten = {};
             
-            // Voor elk Target (L1, L2...)
             for (const [target, coeffs] of Object.entries(gekozenModel.targets)) {
-                let score = 0; // Start op 0 (Geen intercept in jouw modellen)
+                let score = 0; 
 
                 for (const [feat, factor] of Object.entries(coeffs)) {
                     score += (Number(patient[feat]) * factor);
@@ -85,20 +73,20 @@ function ziektestadiamodel(patientenLijst) {
             const [hoogsteID] = Object.entries(resultaten).reduce((max, cur) => cur[1] > max[1] ? cur : max);
             
             patient.ziektestadium = hoogsteID;
-            patient.modelGebruikt = gekozenModel.naam; // Handig om te weten!
-            
-            console.log(`wel Ziektestadia gevonden voor ${patient.patient_id} (Visite ${patient.visit}): Gebruikt model "${gekozenModel.naam}" -> Uitslag: ${hoogsteID}`);
+            patient.modelGebruikt = gekozenModel.naam; 
+
+            console.log(`gevonden Ziektestadia voor ${patient.patient_id} (Visite ${patient.visit}): Gebruikt model "${gekozenModel.naam}" -> Uitslag: ${hoogsteID}`);
 
         } else {
-            // Geen enkel model paste (te veel missing values)
+            // Geen enkel model paste, óf het modellen.csv bestand ontbrak
             patient.ziektestadium = "Onbekend";
             patient.stadiumKansen = null;
             patient.modelGebruikt = "Geen";
-            console.log(`geen Ziektestadia gevonden voor ${patient.patient_id} (Visite ${patient.visit}): Geen enkel model paste (te veel missing data).`);
+
+            console.log(`geen Ziektestadia voor ${patient.patient_id} (Visite ${patient.visit}): Geen model beschikbaar (te veel missende data of geen modellenbestand).`);
         }
     }
 }
-
 
 /**
  * 2. BASELINE MODEL
