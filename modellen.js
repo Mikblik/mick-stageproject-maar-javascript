@@ -33,11 +33,11 @@ function ziektestadiamodel(patientenLijst) {
         console.error(" Geen modellen.csv gevonden! Controleer of het bestand in de juiste map staat. Alle patiënten krijgen status 'Onbekend'.");
     }
 
-    // C. LOOP DOOR PATIËNTEN
+    // LOOP DOOR PATIËNTEN
     for (const patient of patientenLijst) {
         let gekozenModel = null;
 
-        // D. DE WATERVAL: Probeer modellen op volgorde
+        //  Probeer modellen op volgorde
         for (const model of modelLijst) {
             let heeftAlles = true;
             
@@ -162,9 +162,7 @@ function baselinemodel(patientenLijst) {
     console.log("Baseline Model voltooid.");
 }
 
-
-// --- HULPFUNCTIES (Parse, Softmax, Tellers, etc.) ---
-
+// hulp functies
 function parseModelConfig(csvString) {
     const regels = csvString.trim().split('\n');
     const headers = regels[0].split(',').map(h => h.trim()); 
@@ -188,7 +186,6 @@ function parseModelConfig(csvString) {
 
         modellenMap[modelNaam].targets[target] = {}; 
 
-        // Starten bij index 2 (want index 0=Naam, 1=Target)
         for (let j = 2; j < headers.length; j++) {
             const featNaam = headers[j];
             const waarde = kolommen[j] ? kolommen[j].trim() : "";

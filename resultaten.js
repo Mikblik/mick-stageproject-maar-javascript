@@ -227,20 +227,75 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.remove('hidden');
     }
 
-    function closeModal() {
-        modal.classList.add('hidden');
-    }
+    // ========================================================================
+    // MODAL / POP-UP LOGICA (Inzoomen op grafieken)
+    // ========================================================================
+    
+    let actieveWitteBox = null;
+    let grafiekPlaceholder = null;
+    let origineleHoogteClass = '';
 
     allInfoButtons.forEach(button => {
-        
         button.addEventListener('click', () => {
             const title = button.dataset.title;
             const description = button.dataset.description;
             
-            openModal(title, description);
+            // Zoek het originele blauwe blok en pak de witte inhoud (de grafiek)
+            const card = button.closest('.bg-blue-800');
+            actieveWitteBox = card.querySelector('.bg-white');
+            
+            if (!actieveWitteBox) return; // Als er niks is, doe niks
+
+            //  Sla op hoe hoog het blokje was
+            const match = actieveWitteBox.className.match(/h-\w+|h-\[\d+%\]/);
+            origineleHoogteClass = match ? match[0] : 'h-96';
+
+            // Maak een "Gereserveerd" blokje aan zodat je pagina-layout niet inzakt!
+            grafiekPlaceholder = document.createElement('div');
+            grafiekPlaceholder.className = actieveWitteBox.className; 
+            grafiekPlaceholder.innerHTML = '<div class="flex h-full w-full items-center justify-center text-blue-300 font-bold italic">Grafiek is geopend in pop-up...</div>';
+            
+            // Wissel de echte grafiek om met de placeholder
+            actieveWitteBox.replaceWith(grafiekPlaceholder);
+
+            // Zet de echte grafiek in de pop-up
+            const modalSlot = document.getElementById('modal-chart-slot');
+            modalSlot.innerHTML = ''; 
+            modalSlot.appendChild(actieveWitteBox);
+
+            // Maak de grafiek groot
+            actieveWitteBox.classList.remove('h-48', 'h-56', 'h-64', 'h-96', 'h-auto', 'min-h-[12rem]');
+            actieveWitteBox.classList.add('h-full', 'w-full', 'flex-grow');
+
+            // 7. Vul tekst in en open de modal
+            modalTitle.innerText = title;
+            modalContent.innerText = description;
+            modal.classList.remove('hidden');
+
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
         });
-        
     });
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        
+        if (actieveWitteBox && grafiekPlaceholder) {
+            // Haal de pop-up grootte weg
+            actieveWitteBox.classList.remove('h-full', 'w-full', 'flex-grow');
+            // Geef de originele grootte weer terug
+            actieveWitteBox.classList.add(origineleHoogteClass);
+            
+            // Zet de grafiek weer terug op je dashboard (vervangt de placeholder)
+            grafiekPlaceholder.replaceWith(actieveWitteBox);
+            
+            // Leegmaken
+            actieveWitteBox = null;
+            grafiekPlaceholder = null;
+            
+            // Vertel grafieken weer te krimpen
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+        }
+    }
 
     closeButton.addEventListener('click', closeModal);
 
@@ -279,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maakPopulatieScatter(patientenLijst);
         maakPopulatieStadiaHeatmap(patientenLijst);
         maakPopulatieTrajectHeatmap(patientenLijst);
+        vulPopulatieLegenda(patientenLijst);
     }
 
     // ==========================================================================
@@ -292,7 +348,7 @@ function evalueerDataKwaliteit(patientenLijst) {
 
     let totaalVisitesMetMissendeData = 0;
 
-    // 1. Loop door alle data en verzamel de statistieken
+    // Loop door alle data en verzamel de statistieken
     patientenLijst.forEach(p => {
         const id = p.patient_id;
         
@@ -341,7 +397,7 @@ function evalueerDataKwaliteit(patientenLijst) {
         }
     }
 
-    //  Sla de ongebruikte/incoompete data apart op in de sessie!
+    //  Sla de ongebruikte/incoompete data apart op in de sessie
     sessionStorage.setItem('uitgesloten_data_log', JSON.stringify(incompleteVisitesData));
 
     // Geef het rapportage object terug
@@ -355,7 +411,7 @@ function evalueerDataKwaliteit(patientenLijst) {
 }
 
 function toonDataKwaliteitMelding(rapport) {
-    // Als de data 100% perfect is, tonen we geen melding
+    // Als de data 100% perfect is, tonen geen melding
     if (rapport.totaalMissendeVisites === 0) return;
 
     // maak Tailwind waarschuwingsbanner aan
@@ -383,8 +439,7 @@ function toonDataKwaliteitMelding(rapport) {
             </div>
         </div>
     `;
-
-    // 
+ 
     const allePatientenView = document.getElementById('alle-patienten-view');
     if (allePatientenView) {
         allePatientenView.insertBefore(banner, allePatientenView.firstChild);
