@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Traject Voorspeller</title>
+    <title>RA Trajectory Predictor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Stijlen zijn hetzelfde gebleven */
@@ -32,10 +32,10 @@
                 Home
             </a>
             <a href="#" id="nav-patient" class="nav-link text-xl font-bold py-2 px-8 rounded-full shadow-lg text-white bg-blue-700 disabled">
-                een Patiënt
+                Single Patient
             </a>
             <a href="#" id="nav-all-patients" class="nav-link text-xl font-bold py-2 px-8 rounded-full shadow-lg text-white bg-blue-700 disabled">
-                Alle patiënten
+                All Patients
             </a>
         </header>
 
@@ -47,19 +47,19 @@
         </button>
 
         <div id="settings-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-            <a href="#" id="model-auto" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Beide modellen (standaard)</a>
-            <a href="#" id="model-baseline"class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Baseline model</a>
+            <a href="#" id="model-auto" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Both models (default)</a>
+            <a href="#" id="model-baseline" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Baseline model</a>
             <a href="#" id="model-traject" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">KWT/KNN pipeline</a>
         </div>
 
         <div class="flex items-start justify-center space-x-8">
 
             <div class="w-1/2 bg-blue-800 p-6 rounded-lg shadow-xl text-white">
-                <h2 class="text-2xl font-semibold text-center mb-4">Upload een CSV bestand</h2>
+                <h2 class="text-2xl font-semibold text-center mb-4">Upload a CSV file</h2>
 
                 <form id="csv-form">
                     <div class="bg-blue-900 p-4 rounded-md">
-                        <label for="csv_file" class="block text-lg font-medium mb-4">Upload hier je CSV bestand</label>
+                        <label for="csv_file" class="block text-lg font-medium mb-4">Upload your CSV file here</label>
                         <input type="file" name="csv_file" id="csv_file"
                                class="block w-full text-sm text-gray-300
                                       file:mr-4 file:py-2 file:px-4
@@ -77,58 +77,58 @@
 
                     <button type="submit"
                             class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-md transition duration-200">
-                        Verwerk CSV
+                        Process CSV
                     </button>
                 </form>
             </div>
 
             <div class="text-gray-500 text-xl font-bold pt-20">
-                Of
+                Or
             </div>
 
             <div class="w-1/2 bg-blue-800 p-6 rounded-lg shadow-xl text-white">
-                <h2 class="text-2xl font-semibold text-center mb-4">Vul een individuele patiënt in</h2>
+                <h2 class="text-2xl font-semibold text-center mb-4">Enter an individual patient</h2>
 
                 <form id="single-patient-form">
                     <div class="grid grid-cols-1 gap-y-3">
 
                         <div>
-                            <input type="text" value="test" id="patient_id" name="patient_id" placeholder="Vul hier de Patiënt naam in"
+                            <input type="text" value="test" id="patient_id" name="patient_id" placeholder="Enter Patient name here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-patient_id" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="visit" name="visit" placeholder="Vul hier Patiënt visite in."
+                            <input type="text" value=4 id="visit" name="visit" placeholder="Enter Patient visit here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-visit" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="TJC" name="TJC" placeholder="Vul hier TJC28 in."
+                            <input type="text" value=4 id="TJC" name="TJC" placeholder="Enter TJC28 here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-TJC" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="SJC" name="SJC" placeholder="Vul hier SJC28 in."
+                            <input type="text" value=4 id="SJC" name="SJC" placeholder="Enter SJC28 here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-SJC" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="ESR" name="ESR" placeholder="Vul hier ESR in."
+                            <input type="text" value=4 id="ESR" name="ESR" placeholder="Enter ESR here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-ESR" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="Leukocytes" name="Leukocytes" placeholder="Vul hier Leukocyten in."
+                            <input type="text" value=4 id="Leukocytes" name="Leukocytes" placeholder="Enter Leukocytes here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-Leukocytes" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="HB" name="HB" placeholder="Vul hier HB (adj) in."
+                            <input type="text" value=4 id="HB" name="HB" placeholder="Enter HB (adj) here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-HB" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="Thrombocytes" name="Thrombocytes" placeholder="Vul hier Trombocyten in."
+                            <input type="text" value=4 id="Thrombocytes" name="Thrombocytes" placeholder="Enter Thrombocytes here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-Thrombocytes" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
@@ -137,15 +137,15 @@
 
                     <button type="submit"
                             class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg mt-6 shadow-md transition duration-200">
-                        Verwerk Patiënt
+                        Process Patient
                     </button>
                 </form>
             </div>
 
-
-        </div> </div> 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-        <script src="app.js" defer></script>
+        </div> 
+    </div> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="app.js" defer></script>
 
 </body>
 </html>
