@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeButton = document.getElementById('modal-close-button');
     const allInfoButtons = document.querySelectorAll('.info-button');
 
+    // traject keuzebalk voor graph projection Individupagina
+    const selectGraphRef = document.getElementById('select-graph-ref');
+
     // KIJKT HOEVEEL DATA JE HEBT 1 patient of meerdere?? en opent de juiste start pagina>!>!
     // DIT STUK MOET NOG AANGEPAST WORDEN! (BUGGED) ============+!+!++!+!+!++!+!+======
     if (patientenLijst.length === 1) {
@@ -133,8 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             vulPatientSpecifiekeLegenda(gekozenpatientlijst);
 
+            const patientTraject = gekozenpatientlijst[0].ziektetraject || "TR1";
+            if (selectGraphRef) selectGraphRef.value = patientTraject;
+            maakIndividualGraphProjection(gekozenpatientlijst, selectGraphRef.value);
+
             }
     });
+
+    // Luister naar de dropdown van het Netwerk Figuur
+        if (selectGraphRef) {
+            selectGraphRef.addEventListener('change', () => {
+                // Controleer of we al een patiënt hebben gezocht
+                if (typeof gekozenpatientlijst !== 'undefined' && gekozenpatientlijst.length > 0) {
+                    // Teken de grafiek opnieuw, maar nu met de waarde uit de dropdown!
+                    maakIndividualGraphProjection(gekozenpatientlijst, selectGraphRef.value);
+                }
+            });
+        }
 
     // Als visite verandert (staafdiagram (individupagina))
     selectKansVisite.addEventListener('change', () => {
@@ -335,6 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maakPopulatieStadiaHeatmap(patientenLijst);
         maakPopulatieTrajectHeatmap(patientenLijst);
         vulPopulatieLegenda(patientenLijst);
+        maakPopulatieScatterReferentie(patientenLijst)
     }
 
     // ==========================================================================

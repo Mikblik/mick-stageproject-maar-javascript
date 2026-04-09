@@ -1001,3 +1001,296 @@ function vulPopulatieLegenda(patientLijst) {
         stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Geen berekende stadia beschikbaar</td></tr>';
     }
 }
+
+let individualNetwork = null;
+
+// Nu geven we de 'gekozenTrajectRef' mee als 2e parameter!
+function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
+    const container = document.getElementById('graphProjectionNetwork');
+    if (!container) return;
+
+    if (individualNetwork) {
+        individualNetwork.destroy();
+    }
+    container.innerHTML = '';
+
+    if (typeof vis === 'undefined') {
+        schrijfMeldingInDiv("graphProjectionNetwork", "Vis.js bibliotheek niet geladen.");
+        return;
+    }
+    if (typeof REF_GRAPH_PER_TRAJECT === 'undefined') {
+        schrijfMeldingInDiv("graphProjectionNetwork", "Geen referentie graph data gevonden in referentiewaardes.js.");
+        return;
+    }
+
+    // 1. Haal de specifieke referentie data op (bijv. TR4)
+    const trajectRef = REF_GRAPH_PER_TRAJECT[gekozenTrajectRef];
+    if (!trajectRef) {
+        schrijfMeldingInDiv("graphProjectionNetwork", `Geen data beschikbaar voor referentie ${gekozenTrajectRef}.`);
+        return;
+    }
+
+    // 2. Patiënt data chronologisch
+    const gesorteerdeLijst = [...patientenLijst].sort((a, b) => a.visit - b.visit);
+    const patiëntFilm = gesorteerdeLijst.map(p => p.ziektestadium).filter(s => s && !s.startsWith("Onbekend"));
+
+    // 3. Bouw de Nodes (Bollen) op basis van de gekozen referentie
+    const uniekeStadia = Object.keys(trajectRef.nodes);
+    const nodeData = uniekeStadia.map(stadiumCode => {
+        const isPatiëntInDitStadium = patiëntFilm.includes(stadiumCode);
+        return {
+            id: stadiumCode,
+            label: stadiumCode,
+            shape: 'dot',
+            size: 10 + (trajectRef.nodes[stadiumCode] * 0.2), 
+            
+            // We splitsen de kleur netjes op in een border en een achtergrond
+            color: {
+                background: isPatiëntInDitStadium ? '#2563EB' : '#E5E7EB', 
+                border: isPatiëntInDitStadium ? '#1D4ED8' : '#D1D5DB' 
+            },
+            
+            font: { 
+                // HIER ZIT DE FIX: Altijd een donkere kleur, ongeacht of het de patiënt is!
+                color: '#111827', 
+                face: 'Arial, sans-serif', 
+                size: isPatiëntInDitStadium ? 16 : 14, 
+                bold: isPatiëntInDitStadium
+            }
+        };
+    });
+
+    // 4. Bouw de Edges (Lijnen) op basis van de gekozen referentie
+    const edgeData = trajectRef.edges.map(overgang => {
+        let isPatiëntOvergang = false;
+        for (let i = 0; i < patiëntFilm.length - 1; i++) {
+            if (patiëntFilm[i] === overgang.from && patiëntFilm[i+1] === overgang.to) {
+                isPatiëntOvergang = true; break;
+            }
+        }
+        return {
+            from: overgang.from, 
+            to: overgang.to, 
+            
+            // 1. PIJLPUNTEN: Patiënt krijgt een dikke pijl, referentie een klein pijltje
+            arrows: { 
+                to: { enabled: true, scaleFactor: isPatiëntOvergang ? 1.5 : 0.5 } 
+            },
+            
+            color: isPatiëntOvergang ? '#2563EB' : '#D1D5DB', // Blauw vs Grijs
+            width: isPatiëntOvergang ? 4 : (1 + (overgang.gewicht * 0.05)),
+            dashes: isPatiëntOvergang ? false : true, 
+            smooth: { type: 'curvedCW', roundness: 0.2 } 
+        };
+    });
+
+    // 4b. DE MISSENDE STAP: Teken afwijkende shortcuts (Nu in het ROOD met TEKST!)
+    for (let i = 0; i < patiëntFilm.length - 1; i++) {
+        const fromNode = patiëntFilm[i];
+        const toNode = patiëntFilm[i+1];
+
+        if (fromNode === toNode) continue; 
+
+        const routeBestaat = edgeData.find(e => e.from === fromNode && e.to === toNode);
+
+        if (!routeBestaat) {
+            edgeData.push({
+                from: fromNode, 
+                to: toNode, 
+                
+                // Grote pijl
+                arrows: { to: { enabled: true, scaleFactor: 1.5 } },
+                
+                // 2. KLEURCONTRAST: Rood (#EF4444) om direct "Afwijking!" te schreeuwen
+                color: '#EF4444', 
+                width: 4, 
+                dashes: [10, 5], // Duidelijke, grove stippel
+                smooth: { type: 'curvedCW', roundness: 0.4 },
+                
+                // 3. TEKSTLABEL: Zet tekst direct op de lijn!
+                font: { align: 'top', color: '#EF4444', size: 12, bold: true, background: 'white' }
+            });
+        }
+    }
+
+    const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
+    const options = {
+        layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
+        interaction: { dragNodes: true, dragView: true, zoomView: true },
+        physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
+    };
+
+    individualNetwork = new vis.Network(container, data, options);
+}
+
+
+let mijnPopulatieScatterRef = null;
+
+function maakPopulatieScatterReferentie(patientenLijst) {
+    const ctx = document.getElementById('PopulatieScatterReferentie');
+    if (!ctx) return;
+
+    if (mijnPopulatieScatterRef) mijnPopulatieScatterRef.destroy();
+
+    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
+    const dataMatrix = [];
+    const patientInfos = []; 
+
+    // ========================================================================
+    // 1. DATA VERZAMELEN: Echte Patiënten
+    // ========================================================================
+    patientenLijst.forEach(p => {
+        if (!p.ziektetraject || p.ziektetraject.startsWith("Onbekend")) return;
+
+        let mistData = false;
+        const rij = [];
+
+        for (const f of features) {
+            if (p[f] === null || p[f] === undefined || p[f] === "") {
+                mistData = true; break; 
+            }
+            rij.push(Number(p[f]));
+        }
+
+        if (!mistData) {
+            dataMatrix.push(rij);
+            patientInfos.push({ 
+                id: p.patient_id, 
+                visit: p.visit, 
+                traject: p.ziektetraject,
+                isReferentie: false // Labeltje om ze later te kleuren
+            });
+        }
+    });
+
+    // ========================================================================
+    // 2. DATA VERZAMELEN: Referentie Patiënten (Toevoegen aan dezelfde bak!)
+    // ========================================================================
+    if (typeof REF_TRAJECT_POPULATIE !== 'undefined') {
+        const trajectNamen = ['TR1', 'TR2', 'TR3', 'TR4'];
+        
+        trajectNamen.forEach(tr => {
+            if (REF_TRAJECT_POPULATIE[tr]) {
+                REF_TRAJECT_POPULATIE[tr].forEach((refPatient, index) => {
+                    const rij = [];
+                    for (const f of features) {
+                        rij.push(Number(refPatient[f] || 0));
+                    }
+                    dataMatrix.push(rij);
+                    patientInfos.push({
+                        id: `Dummy ${index + 1}`,
+                        visit: '-',
+                        traject: tr,
+                        isReferentie: true // Labeltje om ze later te kleuren
+                    });
+                });
+            }
+        });
+    }
+
+    if (dataMatrix.length < 6) {
+        schrijfMeldingInCanvas('PopulatieScatterReferentie', `Te weinig data voor PCA.`);
+        return; 
+    }
+
+    try {
+        // ====================================================================
+        // EXACT JOUW ORIGINELE WISKUNDE
+        // ====================================================================
+        const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
+        const dataVoorPCA = transpose(dataMatrix); 
+
+        const genormaliseerdeData = dataVoorPCA.map(featureRij => {
+            const n = featureRij.length;
+            const mean = featureRij.reduce((sum, val) => sum + val, 0) / n;
+            const variantie = featureRij.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n;
+            const stdDev = Math.sqrt(variantie);
+
+            return featureRij.map(val => {
+                if (stdDev === 0) return 0; 
+                return (val - mean) / stdDev;
+            });
+        });
+
+        const pcaKlaarData = transpose(genormaliseerdeData); 
+        const vectors = PCA.getEigenVectors(pcaKlaarData);
+        
+        if (!vectors || vectors.length < 2) {
+            schrijfMeldingInCanvas('PopulatieScatterReferentie', "Niet genoeg variatie voor PCA.");
+            return;
+        }
+
+        const adData = PCA.computeAdjustedData(pcaKlaarData, vectors[0], vectors[1]);
+
+        // ====================================================================
+        // 8 DATASETS DEFINIËREN
+        // ====================================================================
+        const datasets = {
+            // Referenties (Donkere kleuren, Ruitvorm)
+            'Ref TR1': { label: 'Referentie TR1', data: [], backgroundColor: '#064E3B', pointStyle: 'rectRot', radius: 6 },
+            'Ref TR2': { label: 'Referentie TR2', data: [], backgroundColor: '#78350F', pointStyle: 'rectRot', radius: 6 },
+            'Ref TR3': { label: 'Referentie TR3', data: [], backgroundColor: '#7F1D1D', pointStyle: 'rectRot', radius: 6 },
+            'Ref TR4': { label: 'Referentie TR4', data: [], backgroundColor: '#4C1D95', pointStyle: 'rectRot', radius: 6 },
+            // Eigen patiënten (Lichte kleuren, Ronde vorm)
+            'Pat TR1': { label: 'Eigen Data TR1', data: [], backgroundColor: '#34D399', pointStyle: 'circle', radius: 4 },
+            'Pat TR2': { label: 'Eigen Data TR2', data: [], backgroundColor: '#FBBF24', pointStyle: 'circle', radius: 4 },
+            'Pat TR3': { label: 'Eigen Data TR3', data: [], backgroundColor: '#F87171', pointStyle: 'circle', radius: 4 },
+            'Pat TR4': { label: 'Eigen Data TR4', data: [], backgroundColor: '#A78BFA', pointStyle: 'circle', radius: 4 }
+        };
+
+        // Koppel de x/y coördinaten aan de juiste dataset
+        for (let i = 0; i < patientInfos.length; i++) {
+            const x = adData.adjustedData[0][i];
+            const y = adData.adjustedData[1][i];
+            const info = patientInfos[i];
+            
+            // Bouw de juiste sleutelnaam (bijv "Ref TR1" of "Pat TR1")
+            const sleutel = info.isReferentie ? `Ref ${info.traject}` : `Pat ${info.traject}`;
+            
+            if (datasets[sleutel]) {
+                datasets[sleutel].data.push({ 
+                    x: x, 
+                    y: y, 
+                    patientId: info.id,
+                    visitNummer: info.visit,
+                    isReferentie: info.isReferentie
+                });
+            }
+        }
+
+        const actieveDatasets = Object.values(datasets).filter(ds => ds.data.length > 0);
+
+        mijnPopulatieScatterRef = new Chart(ctx, {
+            type: 'scatter',
+            data: { datasets: actieveDatasets },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'PCA Clustering: Patiënten vs Referentie' },
+                    legend: { position: 'top', labels: { usePointStyle: true } },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const raw = context.raw;
+                                if (raw.isReferentie) {
+                                    return `Referentie ${context.dataset.label.split(' ')[1]}: ${raw.patientId}`;
+                                }
+                                return `Patiënt: ${raw.patientId} (Visite ${raw.visitNummer})`;
+                            },
+                            afterLabel: (context) => `(PC1: ${context.parsed.x.toFixed(2)}, PC2: ${context.parsed.y.toFixed(2)})`
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Principal Component 1' } },
+                    y: { title: { display: true, text: 'Principal Component 2' } }
+                }
+            }
+        });
+        
+    } catch (e) {
+        console.error("PCA Fout:", e);
+        schrijfMeldingInCanvas('PopulatieScatterReferentie', "Kan PCA niet berekenen.");
+    }
+}
