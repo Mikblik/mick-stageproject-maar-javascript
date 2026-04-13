@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pipeline_DTW_KNN(patientenLijst);
     } else {
         console.log("combo van Baseline en DTW / KNN pipeline word gebruikt.")
-        //resultaat_traject = combowombotraject(patientenLijst);
+        combomodel(patientenLijst)
     }
 
     console.log("geupdate patientenlijst MET TRAJECT/STADIA", patientenLijst)

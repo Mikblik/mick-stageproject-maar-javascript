@@ -1,3 +1,14 @@
+/*
+ * ============================================================================
+ * BESTAND: app.js
+ * BESCHRIJVING: 
+ * Dit script beheert de 'index.html' pagina (de startpagina). Het regelt de 
+ * formulierinzendingen, valideert geüploade CSV-bestanden of individuele data, 
+ * laadt de 'modellen.csv' configuratie, en slaat dit alles op in de sessie-
+ * opslag (sessionStorage) zodat 'resultaten.js' ermee verder kan werken.
+ * ============================================================================
+ */
+
 const VERWACHTE_KOLOMMEN_CSV = [
     'Patient', 'Visite', 'TJC28', 'SJC28', 'ESR',
     'Leukocyten', 'HB (adj.)', 'Trombocyten'
@@ -10,7 +21,7 @@ const KOLOM_MAPPING = {
     'SJC28': 'SJC',
     'ESR': 'ESR',
     'Leukocyten': 'Leukocytes',
-    'Leukocyte': 'Leukocytes', // Extra fallback voor de Engelse spelling
+    'Leukocyte': 'Leukocytes',
     'HB (adj.)': 'HB',
     'Trombocyten': 'Thrombocytes'
 };
@@ -27,11 +38,14 @@ const INDIVIDUELE_VELDEN = [
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ========================================================================
+    // ELEMENTEN OPSLAAN
+    // ========================================================================
+    
+    // Instellingen (Settings Menu)
     const settingsKnop = document.getElementById('settings-knop');
     const settingsDropdown = document.getElementById('settings-dropdown');
-
-    let geselecteerdeModel = 'auto';
-
+    let geselecteerdeModel = 'auto'; // Standaard model instelling
     const modelOptieAuto = document.getElementById('model-auto');
     const modelOptieBaseline = document.getElementById('model-baseline');
     const modelOptieTraject = document.getElementById('model-traject');
@@ -48,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const csvErrorMessage = document.getElementById('csv-error-message');
 
 
-    // ==========================================================
-    // 1. LAAD AUTOMATISCH HET MODELLEN.CSV BESTAND
-    // ==========================================================
+    // ========================================================================
+    // LAAD AUTOMATISCH HET MODELLEN.CSV BESTAND
+    // ========================================================================
     async function laadLokaleModelConfig() {
         try {
             console.log("Bezig met zoeken naar modellen.csv in de projectmap...");
@@ -59,9 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const csvTekst = await response.text();
                 sessionStorage.setItem('custom_model_config', csvTekst);
-                console.log("✅ Lokale modellen.csv succesvol geladen!");
+                console.log("Lokale modellen.csv succesvol geladen!");
             } else {
-                console.warn("⚠️ Geen 'modellen.csv' gevonden in de map. Resultaten kunnen onbekend worden.");
+                console.warn("Geen 'modellen.csv' gevonden in de map. Resultaten kunnen onbekend worden.");
                 sessionStorage.removeItem('custom_model_config');
             }
         } catch (error) {
@@ -74,9 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
     laadLokaleModelConfig();
 
 
-    // ==========================================================
-    // 2. FORMULIER LISTENERS
-    // ==========================================================
+    // ========================================================================
+    // FORMULIER LISTENERS
+    // ========================================================================
     if (csvForm) {
         csvForm.addEventListener('submit', handleCsvSubmit);
     }
@@ -90,9 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
         csvErrorBox.classList.remove('hidden');
     }
 
-    // ==========================================================
-    // 3. PATIËNTEN CSV VERWERKEN
-    // ==========================================================
+    // ========================================================================
+    // PATIËNTEN CSV VERWERKEN
+    // ========================================================================
     function handleCsvSubmit(event) {
         event.preventDefault(); 
         
@@ -130,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
 
-                        // VERSOEPELDE VALIDATIE (Voor ontbrekende data)
                         for (const colName of INDIVIDUELE_NUMERIEKE_VELDEN) {
                             let waarde = nieuweRij[colName];
                             
@@ -162,9 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // ==========================================================
-    // 4. INDIVIDUELE PATIËNT VERWERKEN (Formulier)
-    // ==========================================================
+    // ========================================================================
+    // INDIVIDUELE PATIËNT VERWERKEN (Formulier)
+    // ========================================================================
     function handleSinglePatientSubmit(event) {
         event.preventDefault(); 
 
@@ -224,9 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // ==========================================================
-    // 5. SESSIE DATA CHECK (Voor de navigatieknoppen in de header)
-    // ==========================================================
+    // ========================================================================
+    // SESSIE DATA CHECK (Voor de navigatieknoppen in de header)
+    // ========================================================================
     function checkSessionData() {
         if (sessionStorage.getItem('data_loaded') === 'true') {
             navPatient.classList.remove('disabled');
@@ -246,9 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
     checkSessionData();
 
 
-    // ==========================================================
-    // 6. SETTINGS DROPDOWN LOGICA
-    // ==========================================================
+    // ========================================================================
+    // SETTINGS DROPDOWN LOGICA
+    // ========================================================================
     settingsKnop.addEventListener('click', (event) => {
         event.stopPropagation(); 
         settingsDropdown.classList.toggle('hidden');
