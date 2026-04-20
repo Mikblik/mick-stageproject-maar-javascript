@@ -1,5 +1,15 @@
+/*
+ * ============================================================================
+ * BESTAND: grafieken.js
+ * BESCHRIJVING: 
+ * Dit script bevat alle logica voor het genereren van de Chart.js grafieken.
+ * Het leest de voorspellingen uit de patiëntdata en tekent de trendlijnen,
+ * spreidingsdiagrammen (PCA) en bar-charts (Zekerheid/Kansen).
+ * ============================================================================
+ */
+
 // ==========================================================================
-// HULPFUNCTIES VOOR MISSENDE DATA (UI MELDINGEN)
+// 1. HELPERS (UI berichten voor missing data bericht)
 // ==========================================================================
 
 function schrijfMeldingInCanvas(ctxId, tekst) {
@@ -8,7 +18,7 @@ function schrijfMeldingInCanvas(ctxId, tekst) {
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.font = "14px Arial";
-    context.fillStyle = "#6b7280"; // Grijze tekst
+    context.fillStyle = "#6b7280"; // Gray text
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(tekst, canvas.width / 2, canvas.height / 2);
@@ -22,12 +32,15 @@ function schrijfMeldingInDiv(divId, tekst) {
 
 
 // ==========================================================================
-// INDIVIDUELE FIGUREN
+// 2. individuele patiënt grafieken
 // ==========================================================================
 
 let mijnComboGrafiek = null;
 let mijnKansenGrafiek = null;
 
+// ==========================================================================
+// 2a. feature trendlijn
+// ==========================================================================
 function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
     if (mijnComboGrafiek) {
         mijnComboGrafiek.destroy();
@@ -37,7 +50,7 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
     const labels = gesorteerdedata.map(waarde => `${waarde.visit}`);
 
     const getFeatureData = (featureNaam) => {
-        if (featureNaam === 'Ziektestadium') {
+        if (featureNaam === 'Ziektestadium') { 
             return data.map(p => {
                 if (!p.ziektestadium || p.ziektestadium.startsWith("Onbekend")) return null;
                 return Number(p.ziektestadium.replace('L', ''));
@@ -50,23 +63,23 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
         }
     };
 
+    // verander naar de bijhorende feature namen 
+    const displayLabelLinks = (featureLinks === 'Ziektestadium') ? 'Disease Stage' : featureLinks;
+    const displayLabelRechts = (featureRechts === 'Ziektestadium') ? 'Disease Stage' : featureRechts;
+
     const dataLinks = getFeatureData(featureLinks);
     const dataRechts = getFeatureData(featureRechts);
 
     const ctx = document.getElementById('ComboGrafiek');
     if (!ctx) return;
 
-    // Officiële Chart.js logica om gaten (missende visites) te detecteren
     const spanGapsChecker = (ctx, stippelPatroon) => {
-        // Veiligheidscheck of p0 en p1 bestaan
         if (!ctx.p0 || !ctx.p1) return undefined;
         
-        // 1. Chart.js 'skip' flag (de officiële methode)
-        // 2. Extra veiligheid: als het index-verschil groter is dan 1, ontbreekt er ook data
         if (ctx.p0.skip || ctx.p1.skip || (ctx.p1DataIndex - ctx.p0DataIndex > 1)) {
             return stippelPatroon;
         }
-        return undefined; // Gewone vaste lijn
+        return undefined;
     };
 
     mijnComboGrafiek = new Chart(ctx, {
@@ -75,25 +88,25 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
             labels: labels,
             datasets: [
                 {
-                    label: featureLinks, 
+                    label: displayLabelLinks, 
                     data: dataLinks,
                     borderColor: 'rgb(54, 162, 235)', 
                     backgroundColor: 'rgb(54, 162, 235)',
                     yAxisID: 'y-axis-left', 
                     tension: 0.1,
-                    spanGaps: true, // Overbrug missende data
+                    spanGaps: true,
                     segment: {
                         borderDash: ctx => spanGapsChecker(ctx, [5, 5])
                     }
                 },
                 {
-                    label: featureRechts, 
+                    label: displayLabelRechts, 
                     data: dataRechts,
                     borderColor: 'rgb(255, 99, 132)', 
                     backgroundColor: 'rgb(255, 99, 132)',
                     yAxisID: 'y-axis-right', 
                     tension: 0.1,
-                    spanGaps: true, // Overbrug missende data
+                    spanGaps: true,
                     segment: {
                         borderDash: ctx => spanGapsChecker(ctx, [5, 5])
                     }
@@ -105,16 +118,16 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { title: { display: true, text: 'Visites' } },
+                x: { title: { display: true, text: 'Visits' } },
                 'y-axis-left': {
                     type: 'linear', display: true, position: 'left',
-                    title: { display: true, text: featureLinks, color: 'rgb(54, 162, 235)' },
+                    title: { display: true, text: displayLabelLinks, color: 'rgb(54, 162, 235)' },
                     min: (featureLinks === 'Ziektestadium') ? 1 : undefined,
                     max: (featureLinks === 'Ziektestadium') ? 8 : undefined,
                 },
                 'y-axis-right': {
                     type: 'linear', display: true, position: 'right',
-                    title: { display: true, text: featureRechts, color: 'rgb(255, 99, 132)' },
+                    title: { display: true, text: displayLabelRechts, color: 'rgb(255, 99, 132)' },
                     grid: { drawOnChartArea: false }, 
                     min: (featureRechts === 'Ziektestadium') ? 1 : undefined,
                     max: (featureRechts === 'Ziektestadium') ? 8 : undefined,
@@ -124,6 +137,9 @@ function maakFlexibeleComboGrafiek(data, featureLinks, featureRechts) {
     });
 }
 
+// ==========================================================================
+// 2b. kans model ziektestadium/ziektetraject staafdiagram
+// ==========================================================================
 function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
     if (mijnKansenGrafiek) {
         mijnKansenGrafiek.destroy();
@@ -135,7 +151,7 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
     const visiteData = patientData.find(p => p.visit == gekozenVisiteNummer);
 
     if (!visiteData) {
-        schrijfMeldingInCanvas('KansenGrafiek', `Geen data gevonden voor visite ${gekozenVisiteNummer}`);
+        schrijfMeldingInCanvas('KansenGrafiek', `No data found for visit ${gekozenVisiteNummer}`);
         return;
     }
 
@@ -146,23 +162,23 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
 
     if (type === 'Stadium') {
         if (!visiteData.stadiumKansen) {
-            schrijfMeldingInCanvas('KansenGrafiek', "Patiënt mist benodigde data voor Ziektestadia.");
+            schrijfMeldingInCanvas('KansenGrafiek', "Patient is missing required data for Disease Stage prediction.");
             return;
         }
         labels = Object.keys(visiteData.stadiumKansen).sort(); 
         dataPercentages = labels.map(k => visiteData.stadiumKansen[k] * 100);
         kleur = 'rgba(54, 162, 235, 0.8)'; 
-        labelNaam = 'Kans op Ziektestadium (%)';
+        labelNaam = 'Probability of Disease Stage (%)';
         
     } else if (type === 'Traject') {
         if (!visiteData.trajectKansen) {
-            schrijfMeldingInCanvas('KansenGrafiek', "Patiënt uitgesloten van trajectmodel wegens missende data.");
+            schrijfMeldingInCanvas('KansenGrafiek', "Patient excluded from trajectory model due to missing data.");
             return;
         }
         labels = Object.keys(visiteData.trajectKansen).sort();
         dataPercentages = labels.map(k => visiteData.trajectKansen[k] * 100);
         kleur = 'rgba(75, 192, 192, 0.8)';
-        labelNaam = 'Kans op Traject (%)';
+        labelNaam = 'Probability of Trajectory (%)';
     }
 
     mijnKansenGrafiek = new Chart(ctx, {
@@ -179,7 +195,7 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Zekerheid (%)' } } },
+            scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Confidence (%)' } } },
             plugins: {
                 legend: { display: true }, 
                 tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toFixed(1)}%` } }
@@ -189,6 +205,9 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
 }
 
 
+// ==========================================================================
+// 2c. HEATMAP: ziektestadia vs referentie
+// ==========================================================================
 let mijnApexHeatmap = null;
 
 function maakApexHeatmap(patientenLijst) {
@@ -204,10 +223,11 @@ function maakApexHeatmap(patientenLijst) {
     const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
     const alleSeries = []; 
 
+    // Alleen visites met een geldig ziektestadium filteren
     const geldigeVisites = gesorteerdeLijst.filter(v => v.ziektestadium && REF_GEM_PER_STADIA[v.ziektestadium]);
 
     if (geldigeVisites.length === 0) {
-        schrijfMeldingInDiv("heatmapChart", "Geen berekende ziektestadia beschikbaar wegens missende data.");
+        schrijfMeldingInDiv("heatmapChart", "No calculated disease stages available due to missing data.");
         return;
     }
 
@@ -240,7 +260,7 @@ function maakApexHeatmap(patientenLijst) {
         });
 
         alleSeries.push({
-            name: `Visite ${visiteData.visit} (${stadium})`,
+            name: `Visit ${visiteData.visit} (${stadium})`,
             data: rowData
         });
     });
@@ -253,10 +273,10 @@ function maakApexHeatmap(patientenLijst) {
                 shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul / Zeer laag' }, 
-                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lager' },
-                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normaal' },
-                        { from: 1.06, to: 100, color: '#EF4444', name: 'Hoger' }
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero / Very Low' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower' },
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normal' },
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Higher' }
                     ]
                 }
             }
@@ -267,7 +287,7 @@ function maakApexHeatmap(patientenLijst) {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 const ratio = data.y;
-                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white shadow border">Geen data ingevuld</div>';
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white shadow border">No data entered</div>';
 
                 const patVal = data.goals && data.goals[0] ? data.goals[0].value.toFixed(1) : "?";
                 const refVal = data.goals && data.goals[1] ? data.goals[1].value.toFixed(1) : "?";
@@ -277,8 +297,8 @@ function maakApexHeatmap(patientenLijst) {
                         <div class="font-bold mb-1">${w.globals.labels[dataPointIndex]}</div>
                         <div>Ratio: <strong>${ratio}x</strong></div>
                         <div class="text-xs text-gray-500 mt-1">
-                            Patiënt: ${patVal} <br>
-                            Referentie: ${refVal}
+                            Patient: ${patVal} <br>
+                            Reference: ${refVal}
                         </div>
                     </div>
                 `;
@@ -291,6 +311,9 @@ function maakApexHeatmap(patientenLijst) {
 }
 
 
+// ==========================================================================
+// 2d. HEATMAP: ziektetraject vs referentie
+// ==========================================================================
 let mijnTrajectHeatmap = null;
 
 function maakTrajectHeatmap(patientenLijst) {
@@ -306,7 +329,7 @@ function maakTrajectHeatmap(patientenLijst) {
     const voorspeldTraject = gesorteerdeLijst[0].ziektetraject;
 
     if (!voorspeldTraject || !REF_TRAJECT_BASELINE[voorspeldTraject]) {
-        schrijfMeldingInDiv("trajectHeatmapChart", "Patiënt uitgesloten van baseline model (ontbrekende data). Heatmap niet mogelijk.");
+        schrijfMeldingInDiv("trajectHeatmapChart", "Patient excluded from baseline model (missing data). Heatmap not possible.");
         return;
     }
 
@@ -340,7 +363,7 @@ function maakTrajectHeatmap(patientenLijst) {
             });
         });
 
-        alleSeries.push({ name: `Visite ${visiteData.visit}`, data: rowData });
+        alleSeries.push({ name: `Visit ${visiteData.visit}`, data: rowData });
     });
 
     const options = {
@@ -351,10 +374,10 @@ function maakTrajectHeatmap(patientenLijst) {
                 shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul' }, 
-                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lager dan baseline' }, 
-                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Op baseline' },     
-                        { from: 1.06, to: 100, color: '#EF4444', name: 'Hoger dan baseline' } 
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower than baseline' }, 
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'At baseline' },     
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Higher than baseline' } 
                     ]
                 }
             }
@@ -365,7 +388,7 @@ function maakTrajectHeatmap(patientenLijst) {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 const ratio = data.y;
-                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white border">Geen data ingevuld</div>';
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white border">No data entered</div>';
                 
                 const patVal = data.goals[0].value.toFixed(1);
                 const refVal = data.goals[1].value.toFixed(1);
@@ -375,7 +398,7 @@ function maakTrajectHeatmap(patientenLijst) {
                         <div class="font-bold mb-1">${w.globals.labels[dataPointIndex]}</div>
                         <div>Ratio: <strong>${ratio}x</strong></div>
                         <div class="text-xs text-gray-500 mt-1">
-                            Patiënt: ${patVal} <br>
+                            Patient: ${patVal} <br>
                             Baseline (${voorspeldTraject}): ${refVal}
                         </div>
                     </div>
@@ -387,6 +410,10 @@ function maakTrajectHeatmap(patientenLijst) {
     mijnTrajectHeatmap = new ApexCharts(chartContainer, options);
     mijnTrajectHeatmap.render();
 }
+
+// ==========================================================================
+// 2E. top 5 buren uit de pipeline tabel 
+// ==========================================================================
 
 function vulBurenTabel(patientenLijst) {
     const tabelBody = document.getElementById('burenTabelBody');
@@ -410,15 +437,132 @@ function vulBurenTabel(patientenLijst) {
                         ${buur.traject}
                     </span>
                 </td>
-                <td class="px-4 py-2">Afstand: ${buur.afstand.toFixed(2)}</td>
+                <td class="px-4 py-2">Distance: ${buur.afstand.toFixed(2)}</td>
             `;
             tabelBody.appendChild(rij);
         });
     } else {
-        meldingVeld.innerText = "Deze vergelijking is alleen beschikbaar wanneer de KWT/KNN Pipeline is gebruikt.";
+        meldingVeld.innerText = "This comparison is only available when the KWT/KNN Pipeline is used.";
         meldingVeld.classList.remove('hidden');
     }
 }
+
+// ==========================================================================
+// 2F. Graph projection voor individuele patiënt
+// ==========================================================================
+
+let individualNetwork = null;
+
+function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
+    const container = document.getElementById('graphProjectionNetwork');
+    if (!container) return;
+
+    if (individualNetwork) {
+        individualNetwork.destroy();
+    }
+    container.innerHTML = '';
+
+    if (typeof vis === 'undefined') {
+        schrijfMeldingInDiv("graphProjectionNetwork", "Vis.js library not loaded.");
+        return;
+    }
+    if (typeof REF_GRAPH_PER_TRAJECT === 'undefined') {
+        schrijfMeldingInDiv("graphProjectionNetwork", "No reference graph data found in referentiewaardes.js.");
+        return;
+    }
+
+    const trajectRef = REF_GRAPH_PER_TRAJECT[gekozenTrajectRef];
+    if (!trajectRef) {
+        schrijfMeldingInDiv("graphProjectionNetwork", `No data available for reference ${gekozenTrajectRef}.`);
+        return;
+    }
+
+    const gesorteerdeLijst = [...patientenLijst].sort((a, b) => a.visit - b.visit);
+    const patiëntFilm = gesorteerdeLijst.map(p => p.ziektestadium).filter(s => s && !s.startsWith("Onbekend"));
+
+    const uniekeStadia = Object.keys(trajectRef.nodes);
+    const nodeData = uniekeStadia.map(stadiumCode => {
+        const isPatiëntInDitStadium = patiëntFilm.includes(stadiumCode);
+        return {
+            id: stadiumCode,
+            label: stadiumCode,
+            shape: 'dot',
+            size: 10 + (trajectRef.nodes[stadiumCode] * 0.2), 
+            
+            color: {
+                background: isPatiëntInDitStadium ? '#2563EB' : '#E5E7EB', 
+                border: isPatiëntInDitStadium ? '#1D4ED8' : '#D1D5DB' 
+            },
+            
+            font: { 
+                color: '#111827', 
+                face: 'Arial, sans-serif', 
+                size: isPatiëntInDitStadium ? 16 : 14, 
+                bold: isPatiëntInDitStadium
+            }
+        };
+    });
+
+    const edgeData = trajectRef.edges.map(overgang => {
+        let isPatiëntOvergang = false;
+        for (let i = 0; i < patiëntFilm.length - 1; i++) {
+            if (patiëntFilm[i] === overgang.from && patiëntFilm[i+1] === overgang.to) {
+                isPatiëntOvergang = true; break;
+            }
+        }
+        return {
+            from: overgang.from, 
+            to: overgang.to, 
+            
+            arrows: { 
+                to: { enabled: true, scaleFactor: isPatiëntOvergang ? 1.5 : 0.5 } 
+            },
+            
+            color: isPatiëntOvergang ? '#2563EB' : '#D1D5DB', 
+            width: isPatiëntOvergang ? 4 : (1 + (overgang.gewicht * 0.05)),
+            dashes: isPatiëntOvergang ? false : true, 
+            smooth: { type: 'curvedCW', roundness: 0.2 } 
+        };
+    });
+
+    for (let i = 0; i < patiëntFilm.length - 1; i++) {
+        const fromNode = patiëntFilm[i];
+        const toNode = patiëntFilm[i+1];
+
+        if (fromNode === toNode) continue; 
+
+        const routeBestaat = edgeData.find(e => e.from === fromNode && e.to === toNode);
+
+        if (!routeBestaat) {
+            edgeData.push({
+                from: fromNode, 
+                to: toNode, 
+                
+                arrows: { to: { enabled: true, scaleFactor: 1.5 } },
+                
+                color: '#EF4444', 
+                width: 4, 
+                dashes: [10, 5], 
+                smooth: { type: 'curvedCW', roundness: 0.4 },
+                
+                font: { align: 'top', color: '#EF4444', size: 12, bold: true, background: 'white' }
+            });
+        }
+    }
+
+    const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
+    const options = {
+        layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
+        interaction: { dragNodes: true, dragView: true, zoomView: true },
+        physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
+    };
+
+    individualNetwork = new vis.Network(container, data, options);
+}
+
+// ==========================================================================
+// 2G. Uitleg tabel voor de gevonden ziektestadia en traject
+// ==========================================================================
 
 function vulPatientSpecifiekeLegenda(patientLijst) {
     const trajectBody = document.getElementById('legendaTrajectBody');
@@ -440,10 +584,9 @@ function vulPatientSpecifiekeLegenda(patientLijst) {
         `;
         trajectBody.appendChild(rij);
     } else {
-        trajectBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Uitgesloten van trajectbepaling</td></tr>';
+        trajectBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Excluded from trajectory determination</td></tr>';
     }
 
-    // Filter "Onbekend" eruit voor de legenda
     const uniekeStadia = new Set(patientLijst.map(p => p.ziektestadium).filter(s => s && !s.startsWith("Onbekend")));
     const gesorteerdeStadia = Array.from(uniekeStadia).sort();
 
@@ -460,17 +603,20 @@ function vulPatientSpecifiekeLegenda(patientLijst) {
             }
         });
     } else {
-        stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Geen berekende stadia beschikbaar</td></tr>';
+        stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">No calculated stages available</td></tr>';
     }
 }
 
 
 // ==========================================================================
-// POPULATIE FIGUREN (DASHBOARD)
+// 3. 'Alle' patiënten grafieken 
 // ==========================================================================
 
 let mijnTrajectTrendGrafiek = null;
 
+// ==========================================================================
+// 3a. gemmiddelde waarden van patiënten per ziektetraject trendlijn figuur
+// ==========================================================================
 function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
     let maxVisit = 0;
     Object.values(gemiddeldeData).forEach(lijst => {
@@ -482,13 +628,13 @@ function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
     });
 
     if (maxVisit === 0) {
-        schrijfMeldingInCanvas('TrajectTrendGrafiek', "Geen bruikbare populatiedata voor deze trendgrafiek.");
+        schrijfMeldingInCanvas('TrajectTrendGrafiek', "No usable population data available for this trend chart.");
         if (mijnTrajectTrendGrafiek) mijnTrajectTrendGrafiek.destroy();
         return;
     }
 
     const labels = [];
-    for (let i = 1; i <= maxVisit; i++) { labels.push(`Visite ${i}`); }
+    for (let i = 1; i <= maxVisit; i++) { labels.push(`Visit ${i}`); }
 
     const trajectConfig = [
         { id: 'TR1', label: 'TR1', dash: [] },
@@ -545,7 +691,7 @@ function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                title: { display: true, text: `Vergelijking Trajecten: ${feature1} (Links) vs ${feature2} (Rechts)` },
+                title: { display: true, text: `Trajectory Comparison: ${feature1} (Left) vs ${feature2} (Right)` },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -557,7 +703,7 @@ function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
                 }
             },
             scales: {
-                x: { display: true, title: { display: true, text: 'Visites' } },
+                x: { display: true, title: { display: true, text: 'Visits' } },
                 'y-left': { type: 'linear', display: true, position: 'left', title: { display: true, text: feature1, color: 'rgb(54, 162, 235)' } },
                 'y-right': { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: feature2, color: 'rgb(255, 99, 132)' } }
             }
@@ -566,7 +712,7 @@ function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
 }
 
 // ==========================================================================
-// POPULATIESCATTER (PCA) - PER VISITE MET Z-SCORE
+// 3b. PCA
 // ==========================================================================
 
 let mijnPopulatieScatter = null;
@@ -581,7 +727,6 @@ function maakPopulatieScatter(patientenLijst) {
     const dataMatrix = [];
     const patientInfos = []; 
 
-    // DATA VERZAMELEN
     patientenLijst.forEach(p => {
         if (!p.ziektetraject || p.ziektetraject.startsWith("Onbekend")) return;
 
@@ -606,20 +751,15 @@ function maakPopulatieScatter(patientenLijst) {
         }
     });
 
-    // ====================================================================
-    // DE HARDE GRENS: Minimaal 6 visites nodig (omdat we 6 features hebben)
-    // ====================================================================
     if (dataMatrix.length < 6) {
-        schrijfMeldingInCanvas('PopulatieScatter', `Te weinig data voor PCA. Minimaal 6 complete visites vereist (Gevonden: ${dataMatrix.length}).`);
-        return; // Stop de functie hier: we tekenen géén figuur.
+        schrijfMeldingInCanvas('PopulatieScatter', `Not enough data for PCA. Minimum of 6 complete visits required (Found: ${dataMatrix.length}).`);
+        return; 
     }
 
     try {
-        // TRANSPONEREN VOOR Z-SCORE
         const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
-        const dataVoorPCA = transpose(dataMatrix); // Nu 6 rijen, N kolommen
+        const dataVoorPCA = transpose(dataMatrix); // Now 6 rows, N columns
 
-        // Z-SCORE NORMALISATIE 
         const genormaliseerdeData = dataVoorPCA.map(featureRij => {
             const n = featureRij.length;
             const mean = featureRij.reduce((sum, val) => sum + val, 0) / n;
@@ -632,22 +772,18 @@ function maakPopulatieScatter(patientenLijst) {
             });
         });
 
-        // DE WISKUNDE 
-        // Transponeer de data WEER TERUG naar N rijen (patiënten) en 6 kolommen (features)
         const pcaKlaarData = transpose(genormaliseerdeData); 
         
-        // Gebruik nu de terug-gedraaide data voor je PCA!
         const vectors = PCA.getEigenVectors(pcaKlaarData);
         
         if (!vectors || vectors.length < 2) {
-            schrijfMeldingInCanvas('PopulatieScatter', "Data heeft niet genoeg variatie om een PCA grafiek te tekenen.");
+            schrijfMeldingInCanvas('PopulatieScatter', "Data lacks sufficient variance to draw a PCA chart.");
             return;
         }
 
         const adData = PCA.computeAdjustedData(pcaKlaarData, vectors[0], vectors[1]);
     
 
-        // DATA KOPPELEN AAN GRAFIEK
         const datasets = {
             'TR1': { label: 'TR1', data: [], backgroundColor: 'green' },
             'TR2': { label: 'TR2', data: [], backgroundColor: 'orange' },
@@ -679,14 +815,14 @@ function maakPopulatieScatter(patientenLijst) {
                 responsive: true, 
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'PCA Clustering (Genormaliseerd met Z-score)' },
+                    title: { display: true, text: 'PCA Clustering (Z-score Normalized)' },
                     legend: { position: 'top' },
                     tooltip: {
                         callbacks: {
                             label: (context) => {
                                 const naam = context.raw.patientId;
                                 const vis = context.raw.visitNummer;
-                                return `Patiënt: ${naam} (Visite ${vis})`;
+                                return `Patient: ${naam} (Visit ${vis})`;
                             },
                             afterLabel: (context) => `(PC1: ${context.parsed.x.toFixed(2)}, PC2: ${context.parsed.y.toFixed(2)})`
                         }
@@ -700,13 +836,13 @@ function maakPopulatieScatter(patientenLijst) {
         });
         
     } catch (e) {
-        console.error("PCA Fout:", e);
-        schrijfMeldingInCanvas('PopulatieScatter', "Kan PCA niet berekenen door een wiskundige fout in de data.");
+        console.error("PCA Error:", e);
+        schrijfMeldingInCanvas('PopulatieScatter', "Unable to calculate PCA due to a mathematical error in the data.");
     }
 }
 
 // ==========================================================================
-// POPULATIE HEATMAPS (ALLE PATIËNTEN)
+// 3c. Heatmap: gemiddelde waarden van patiënten per ziektestadium vs referentie
 // ==========================================================================
 
 let mijnPopulatieStadiaHeatmap = null;
@@ -744,7 +880,7 @@ function maakPopulatieStadiaHeatmap(patientenLijst) {
     const gevondenStadia = Object.keys(geaggregeerdeData).sort();
 
     if (gevondenStadia.length === 0) {
-        schrijfMeldingInDiv("populatieStadiaHeatmapChart", "Geen geldige ziektestadia data gevonden voor de populatie heatmap.");
+        schrijfMeldingInDiv("populatieStadiaHeatmapChart", "No valid disease stage data found for the population heatmap.");
         return;
     }
 
@@ -779,7 +915,7 @@ function maakPopulatieStadiaHeatmap(patientenLijst) {
             });
         });
 
-        alleSeries.push({ name: `Stadium ${stadium}`, data: rowData });
+        alleSeries.push({ name: `Stage ${stadium}`, data: rowData });
     });
 
     const options = {
@@ -790,22 +926,22 @@ function maakPopulatieStadiaHeatmap(patientenLijst) {
                 shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul / Zeer laag' }, 
-                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lager' },
-                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normaal' },
-                        { from: 1.06, to: 100, color: '#EF4444', name: 'Hoger' }
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero / Very Low' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower' },
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normal' },
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Higher' }
                     ]
                 }
             }
         },
         dataLabels: { enabled: true, style: { colors: ['#000'] } },
-        title: { text: `Populatie: Gemiddelde per Stadium vs Referentie` },
+        title: { text: `Population: Average per Stage vs Reference` },
         xaxis: { position: 'bottom', tooltip: { enabled: false } },
         tooltip: {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 const ratio = data.y;
-                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white shadow border">Geen data ingevuld</div>';
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white shadow border">No data entered</div>';
 
                 const patVal = data.goals && data.goals[0] ? data.goals[0].value.toFixed(1) : "?";
                 const refVal = data.goals && data.goals[1] ? data.goals[1].value.toFixed(1) : "?";
@@ -815,19 +951,21 @@ function maakPopulatieStadiaHeatmap(patientenLijst) {
                         <div class="font-bold mb-1">${w.globals.labels[dataPointIndex]}</div>
                         <div>Ratio: <strong>${ratio}x</strong></div>
                         <div class="text-xs text-gray-500 mt-1">
-                            Populatie Gem.: ${patVal} <br>
-                            Referentie: ${refVal}
+                            Population Avg: ${patVal} <br>
+                            Reference: ${refVal}
                         </div>
                     </div>
                 `;
             }
         }
     };
-
     mijnPopulatieStadiaHeatmap = new ApexCharts(chartContainer, options);
     mijnPopulatieStadiaHeatmap.render();
 }
 
+// ==========================================================================
+// 3D. Heatmap: gemiddelde waarden van patiënten per traject vs referentie
+// ==========================================================================
 
 let mijnPopulatieTrajectHeatmap = null;
 
@@ -863,7 +1001,7 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
     const gevondenTrajecten = Object.keys(geaggregeerdeData).sort(); 
 
     if (gevondenTrajecten.length === 0) {
-        schrijfMeldingInDiv("populatieTrajectHeatmapChart", "Geen Baseline (Visite 1) data gevonden om trajecten te groeperen.");
+        schrijfMeldingInDiv("populatieTrajectHeatmapChart", "No Baseline (Visit 1) data found to group trajectories.");
         return;
     }
 
@@ -908,10 +1046,10 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
                 shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Nul' }, 
-                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lager' }, 
-                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normaal' },    
-                        { from: 1.06, to: 100, color: '#EF4444', name: 'Hoger' } 
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower' }, 
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normal' },    
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Higher' } 
                     ]
                 }
             }
@@ -922,7 +1060,7 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
                 const data = w.config.series[seriesIndex].data[dataPointIndex];
                 const ratio = data.y;
-                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white border">Geen data ingevuld</div>';
+                if (ratio === null) return '<div class="p-2 text-xs text-gray-500 bg-white border">No data entered</div>';
                 
                 const patVal = data.goals[0].value.toFixed(1);
                 const refVal = data.goals[1].value.toFixed(1);
@@ -932,7 +1070,7 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
                         <div class="font-bold mb-1">${w.globals.labels[dataPointIndex]}</div>
                         <div>Ratio: <strong>${ratio}x</strong></div>
                         <div class="text-xs text-gray-500 mt-1">
-                            Populatie Gem.: ${patVal} <br>
+                            Population Avg: ${patVal} <br>
                             Baseline Ref.: ${refVal}
                         </div>
                     </div>
@@ -945,9 +1083,10 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
     mijnPopulatieTrajectHeatmap.render();
 }
 
-// de legenda voor gevonden stadia/trajecten alle patient pagina
+// ==========================================================================
+// 3e. Legenda voor uitleg over de ziektestadia/trajecten
+// ==========================================================================
 function vulPopulatieLegenda(patientLijst) {
-    // HIER ZAT DE FOUT: De ID's moeten exact matchen met de nieuwe HTML!
     const trajectBody = document.getElementById('populatieLegendaTrajectBody');
     const stadiaBody = document.getElementById('populatieLegendaStadiaBody');
 
@@ -976,7 +1115,7 @@ function vulPopulatieLegenda(patientLijst) {
             }
         });
     } else {
-        trajectBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Geen trajecten gevonden in populatie</td></tr>';
+        trajectBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">No trajectories found in population</td></tr>';
     }
 
     const uniekeStadia = new Set(
@@ -998,131 +1137,16 @@ function vulPopulatieLegenda(patientLijst) {
             }
         });
     } else {
-        stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">Geen berekende stadia beschikbaar</td></tr>';
+        stadiaBody.innerHTML = '<tr><td class="p-2 text-gray-400 text-xs italic">No calculated stages available</td></tr>';
     }
 }
 
-let individualNetwork = null;
 
-// Nu geven we de 'gekozenTrajectRef' mee als 2e parameter!
-function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
-    const container = document.getElementById('graphProjectionNetwork');
-    if (!container) return;
-
-    if (individualNetwork) {
-        individualNetwork.destroy();
-    }
-    container.innerHTML = '';
-
-    if (typeof vis === 'undefined') {
-        schrijfMeldingInDiv("graphProjectionNetwork", "Vis.js bibliotheek niet geladen.");
-        return;
-    }
-    if (typeof REF_GRAPH_PER_TRAJECT === 'undefined') {
-        schrijfMeldingInDiv("graphProjectionNetwork", "Geen referentie graph data gevonden in referentiewaardes.js.");
-        return;
-    }
-
-    // 1. Haal de specifieke referentie data op (bijv. TR4)
-    const trajectRef = REF_GRAPH_PER_TRAJECT[gekozenTrajectRef];
-    if (!trajectRef) {
-        schrijfMeldingInDiv("graphProjectionNetwork", `Geen data beschikbaar voor referentie ${gekozenTrajectRef}.`);
-        return;
-    }
-
-    // 2. Patiënt data chronologisch
-    const gesorteerdeLijst = [...patientenLijst].sort((a, b) => a.visit - b.visit);
-    const patiëntFilm = gesorteerdeLijst.map(p => p.ziektestadium).filter(s => s && !s.startsWith("Onbekend"));
-
-    // 3. Bouw de Nodes (Bollen) op basis van de gekozen referentie
-    const uniekeStadia = Object.keys(trajectRef.nodes);
-    const nodeData = uniekeStadia.map(stadiumCode => {
-        const isPatiëntInDitStadium = patiëntFilm.includes(stadiumCode);
-        return {
-            id: stadiumCode,
-            label: stadiumCode,
-            shape: 'dot',
-            size: 10 + (trajectRef.nodes[stadiumCode] * 0.2), 
-            
-            // We splitsen de kleur netjes op in een border en een achtergrond
-            color: {
-                background: isPatiëntInDitStadium ? '#2563EB' : '#E5E7EB', 
-                border: isPatiëntInDitStadium ? '#1D4ED8' : '#D1D5DB' 
-            },
-            
-            font: { 
-                // HIER ZIT DE FIX: Altijd een donkere kleur, ongeacht of het de patiënt is!
-                color: '#111827', 
-                face: 'Arial, sans-serif', 
-                size: isPatiëntInDitStadium ? 16 : 14, 
-                bold: isPatiëntInDitStadium
-            }
-        };
-    });
-
-    // 4. Bouw de Edges (Lijnen) op basis van de gekozen referentie
-    const edgeData = trajectRef.edges.map(overgang => {
-        let isPatiëntOvergang = false;
-        for (let i = 0; i < patiëntFilm.length - 1; i++) {
-            if (patiëntFilm[i] === overgang.from && patiëntFilm[i+1] === overgang.to) {
-                isPatiëntOvergang = true; break;
-            }
-        }
-        return {
-            from: overgang.from, 
-            to: overgang.to, 
-            
-            // 1. PIJLPUNTEN: Patiënt krijgt een dikke pijl, referentie een klein pijltje
-            arrows: { 
-                to: { enabled: true, scaleFactor: isPatiëntOvergang ? 1.5 : 0.5 } 
-            },
-            
-            color: isPatiëntOvergang ? '#2563EB' : '#D1D5DB', // Blauw vs Grijs
-            width: isPatiëntOvergang ? 4 : (1 + (overgang.gewicht * 0.05)),
-            dashes: isPatiëntOvergang ? false : true, 
-            smooth: { type: 'curvedCW', roundness: 0.2 } 
-        };
-    });
-
-    // 4b. DE MISSENDE STAP: Teken afwijkende shortcuts (Nu in het ROOD met TEKST!)
-    for (let i = 0; i < patiëntFilm.length - 1; i++) {
-        const fromNode = patiëntFilm[i];
-        const toNode = patiëntFilm[i+1];
-
-        if (fromNode === toNode) continue; 
-
-        const routeBestaat = edgeData.find(e => e.from === fromNode && e.to === toNode);
-
-        if (!routeBestaat) {
-            edgeData.push({
-                from: fromNode, 
-                to: toNode, 
-                
-                // Grote pijl
-                arrows: { to: { enabled: true, scaleFactor: 1.5 } },
-                
-                // 2. KLEURCONTRAST: Rood (#EF4444) om direct "Afwijking!" te schreeuwen
-                color: '#EF4444', 
-                width: 4, 
-                dashes: [10, 5], // Duidelijke, grove stippel
-                smooth: { type: 'curvedCW', roundness: 0.4 },
-                
-                // 3. TEKSTLABEL: Zet tekst direct op de lijn!
-                font: { align: 'top', color: '#EF4444', size: 12, bold: true, background: 'white' }
-            });
-        }
-    }
-
-    const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
-    const options = {
-        layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
-        interaction: { dragNodes: true, dragView: true, zoomView: true },
-        physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
-    };
-
-    individualNetwork = new vis.Network(container, data, options);
-}
-
+// ==========================================================================
+// 4e. POPULATION SCATTER (PCA): PATIENTS VS REFERENCE DUMMIES
+// Computes a PCA including predefined reference patients (diamonds)
+// so the user can visually assess cluster quality of new data.
+// ==========================================================================
 
 let mijnPopulatieScatterRef = null;
 
@@ -1136,9 +1160,7 @@ function maakPopulatieScatterReferentie(patientenLijst) {
     const dataMatrix = [];
     const patientInfos = []; 
 
-    // ========================================================================
-    // 1. DATA VERZAMELEN: Echte Patiënten
-    // ========================================================================
+    // DATA COLLECTION: Real Patients
     patientenLijst.forEach(p => {
         if (!p.ziektetraject || p.ziektetraject.startsWith("Onbekend")) return;
 
@@ -1158,14 +1180,12 @@ function maakPopulatieScatterReferentie(patientenLijst) {
                 id: p.patient_id, 
                 visit: p.visit, 
                 traject: p.ziektetraject,
-                isReferentie: false // Labeltje om ze later te kleuren
+                isReferentie: false 
             });
         }
     });
 
-    // ========================================================================
-    // 2. DATA VERZAMELEN: Referentie Patiënten (Toevoegen aan dezelfde bak!)
-    // ========================================================================
+    // DATA COLLECTION: Reference Patients (Dummies added to the same matrix)
     if (typeof REF_TRAJECT_POPULATIE !== 'undefined') {
         const trajectNamen = ['TR1', 'TR2', 'TR3', 'TR4'];
         
@@ -1181,7 +1201,7 @@ function maakPopulatieScatterReferentie(patientenLijst) {
                         id: `Dummy ${index + 1}`,
                         visit: '-',
                         traject: tr,
-                        isReferentie: true // Labeltje om ze later te kleuren
+                        isReferentie: true 
                     });
                 });
             }
@@ -1189,14 +1209,11 @@ function maakPopulatieScatterReferentie(patientenLijst) {
     }
 
     if (dataMatrix.length < 6) {
-        schrijfMeldingInCanvas('PopulatieScatterReferentie', `Te weinig data voor PCA.`);
+        schrijfMeldingInCanvas('PopulatieScatterReferentie', `Not enough data for PCA.`);
         return; 
     }
 
     try {
-        // ====================================================================
-        // EXACT JOUW ORIGINELE WISKUNDE
-        // ====================================================================
         const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
         const dataVoorPCA = transpose(dataMatrix); 
 
@@ -1216,35 +1233,29 @@ function maakPopulatieScatterReferentie(patientenLijst) {
         const vectors = PCA.getEigenVectors(pcaKlaarData);
         
         if (!vectors || vectors.length < 2) {
-            schrijfMeldingInCanvas('PopulatieScatterReferentie', "Niet genoeg variatie voor PCA.");
+            schrijfMeldingInCanvas('PopulatieScatterReferentie', "Data lacks sufficient variance for PCA.");
             return;
         }
 
         const adData = PCA.computeAdjustedData(pcaKlaarData, vectors[0], vectors[1]);
 
-        // ====================================================================
-        // 8 DATASETS DEFINIËREN
-        // ====================================================================
         const datasets = {
-            // Referenties (Donkere kleuren, Ruitvorm)
-            'Ref TR1': { label: 'Referentie TR1', data: [], backgroundColor: '#064E3B', pointStyle: 'rectRot', radius: 6 },
-            'Ref TR2': { label: 'Referentie TR2', data: [], backgroundColor: '#78350F', pointStyle: 'rectRot', radius: 6 },
-            'Ref TR3': { label: 'Referentie TR3', data: [], backgroundColor: '#7F1D1D', pointStyle: 'rectRot', radius: 6 },
-            'Ref TR4': { label: 'Referentie TR4', data: [], backgroundColor: '#4C1D95', pointStyle: 'rectRot', radius: 6 },
-            // Eigen patiënten (Lichte kleuren, Ronde vorm)
-            'Pat TR1': { label: 'Eigen Data TR1', data: [], backgroundColor: '#34D399', pointStyle: 'circle', radius: 4 },
-            'Pat TR2': { label: 'Eigen Data TR2', data: [], backgroundColor: '#FBBF24', pointStyle: 'circle', radius: 4 },
-            'Pat TR3': { label: 'Eigen Data TR3', data: [], backgroundColor: '#F87171', pointStyle: 'circle', radius: 4 },
-            'Pat TR4': { label: 'Eigen Data TR4', data: [], backgroundColor: '#A78BFA', pointStyle: 'circle', radius: 4 }
+            'Ref TR1': { label: 'Reference TR1', data: [], backgroundColor: '#064E3B', pointStyle: 'rectRot', radius: 6 },
+            'Ref TR2': { label: 'Reference TR2', data: [], backgroundColor: '#78350F', pointStyle: 'rectRot', radius: 6 },
+            'Ref TR3': { label: 'Reference TR3', data: [], backgroundColor: '#7F1D1D', pointStyle: 'rectRot', radius: 6 },
+            'Ref TR4': { label: 'Reference TR4', data: [], backgroundColor: '#4C1D95', pointStyle: 'rectRot', radius: 6 },
+            
+            'Pat TR1': { label: 'Own Data TR1', data: [], backgroundColor: '#34D399', pointStyle: 'circle', radius: 4 },
+            'Pat TR2': { label: 'Own Data TR2', data: [], backgroundColor: '#FBBF24', pointStyle: 'circle', radius: 4 },
+            'Pat TR3': { label: 'Own Data TR3', data: [], backgroundColor: '#F87171', pointStyle: 'circle', radius: 4 },
+            'Pat TR4': { label: 'Own Data TR4', data: [], backgroundColor: '#A78BFA', pointStyle: 'circle', radius: 4 }
         };
 
-        // Koppel de x/y coördinaten aan de juiste dataset
         for (let i = 0; i < patientInfos.length; i++) {
             const x = adData.adjustedData[0][i];
             const y = adData.adjustedData[1][i];
             const info = patientInfos[i];
             
-            // Bouw de juiste sleutelnaam (bijv "Ref TR1" of "Pat TR1")
             const sleutel = info.isReferentie ? `Ref ${info.traject}` : `Pat ${info.traject}`;
             
             if (datasets[sleutel]) {
@@ -1267,16 +1278,16 @@ function maakPopulatieScatterReferentie(patientenLijst) {
                 responsive: true, 
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'PCA Clustering: Patiënten vs Referentie' },
+                    title: { display: true, text: 'PCA Clustering: Patients vs Reference' },
                     legend: { position: 'top', labels: { usePointStyle: true } },
                     tooltip: {
                         callbacks: {
                             label: (context) => {
                                 const raw = context.raw;
                                 if (raw.isReferentie) {
-                                    return `Referentie ${context.dataset.label.split(' ')[1]}: ${raw.patientId}`;
+                                    return `Reference ${context.dataset.label.split(' ')[1]}: ${raw.patientId}`;
                                 }
-                                return `Patiënt: ${raw.patientId} (Visite ${raw.visitNummer})`;
+                                return `Patient: ${raw.patientId} (Visit ${raw.visitNummer})`;
                             },
                             afterLabel: (context) => `(PC1: ${context.parsed.x.toFixed(2)}, PC2: ${context.parsed.y.toFixed(2)})`
                         }
@@ -1290,7 +1301,7 @@ function maakPopulatieScatterReferentie(patientenLijst) {
         });
         
     } catch (e) {
-        console.error("PCA Fout:", e);
-        schrijfMeldingInCanvas('PopulatieScatterReferentie', "Kan PCA niet berekenen.");
+        console.error("PCA Error:", e);
+        schrijfMeldingInCanvas('PopulatieScatterReferentie', "Unable to calculate PCA.");
     }
 }

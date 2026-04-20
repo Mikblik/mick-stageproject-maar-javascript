@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maakPopulatieScatterReferentie(patientenLijst)
     }
 
-    // ==========================================================================
+// ==========================================================================
 // DATA KWALITEIT & RAPPORTAGE
 // ==========================================================================
 
@@ -430,7 +430,7 @@ function evalueerDataKwaliteit(patientenLijst) {
 }
 
 function toonDataKwaliteitMelding(rapport) {
-    // Als de data 100% perfect is, tonen geen melding
+    // Als de data perfect is, tonen geen melding
     if (rapport.totaalMissendeVisites === 0) return;
 
     // maak Tailwind waarschuwingsbanner aan
@@ -462,6 +462,124 @@ function toonDataKwaliteitMelding(rapport) {
     const allePatientenView = document.getElementById('alle-patienten-view');
     if (allePatientenView) {
         allePatientenView.insertBefore(banner, allePatientenView.firstChild);
+    }
+
+    // ========================================================================
+    // EXPORT NAAR CSV (EXCEL)
+    // ========================================================================
+    const exportKnop = document.getElementById('exportCsvKnop');
+    
+    if (exportKnop) {
+        exportKnop.addEventListener('click', () => {
+            console.log("Start export naar CSV...");
+
+            // Bouw een schone lijst met alleen de kolommen die we willen exporteren
+            const exportData = patientenLijst.map(p => {
+                const veiligID = p.patient_id || p.Patient || p.patient || 'Onbekend';
+
+                return {
+                    'Patient ID': veiligID,
+                    'Visite': p.visit,
+                    'TJC28': p.TJC !== null ? p.TJC : '', 
+                    'SJC28': p.SJC !== null ? p.SJC : '',
+                    'ESR': p.ESR !== null ? p.ESR : '',
+                    'Leukocyten': p.Leukocytes !== null ? p.Leukocytes : '',
+                    'HB (adj.)': p.HB !== null ? p.HB : '',
+                    'Trombocyten': p.Thrombocytes !== null ? p.Thrombocytes : '',
+                    'Ziektestadium (L1-L8)': p.ziektestadium || 'Onbekend',
+                    'Voorspeld Traject (TR1-TR4)': p.ziektetraject || 'Onbekend',
+                    'Gebruikt AI Model': p.gebruiktTrajectModel || p.modelGebruikt || 'Geen'
+                };
+            });
+
+            // 2. Gebruik PapaParse om de JSON om te zetten naar een string
+            const csvString = Papa.unparse(exportData, {
+                quotes: true, 
+                delimiter: ";"
+            });
+
+            const excelFix = "\uFEFFsep=;\n";
+            const definitieveCsv = excelFix + csvString;
+
+            // Maak een downloadbaar bestandje aan in de browser
+            const blob = new Blob([definitieveCsv], { type: 'text/csv;charset=utf-8;' }); 
+            const url = URL.createObjectURL(blob);
+            
+            // Maak een onzichtbare link, klik erop, en gooi hem weer weg
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "RA_Voorspellingen_Export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    // ========================================================================
+    // EXPORT INDIVIDUELE PATIËNT NAAR CSV (EXCEL)
+    // ========================================================================
+    const exportIndivKnop = document.getElementById('exportIndivCsvKnop');
+    
+    if (exportIndivKnop) {
+        exportIndivKnop.addEventListener('click', () => {
+            // 1. Bepaal welke patiënt momenteel bekeken wordt
+            const huidigeNaam = document.getElementById('DePatiënt').value.trim();
+            
+            if (!huidigeNaam) {
+                alert("Please enter a patient name first.");
+                return;
+            }
+
+            // Filter de volledige lijst op alleen deze patiënt
+            const specifiekePatientData = patientenLijst.filter(p => {
+                const id = p.patient_id || p.Patient || p.patient;
+                return String(id).toLowerCase() === huidigeNaam.toLowerCase();
+            });
+
+            if (specifiekePatientData.length === 0) {
+                alert("No data found for this patient to export.");
+                return;
+            }
+
+            console.log(`Exporting data for patient: ${huidigeNaam}`);
+
+            // Formatteer de data (Identiek aan de populatie export)
+            const exportData = specifiekePatientData.map(p => {
+                const veiligID = p.patient_id || p.Patient || p.patient || 'Unknown';
+                return {
+                    'Patient ID': veiligID,
+                    'Visite': p.visit,
+                    'TJC28': p.TJC !== null ? p.TJC : '', 
+                    'SJC28': p.SJC !== null ? p.SJC : '',
+                    'ESR': p.ESR !== null ? p.ESR : '',
+                    'Leukocyten': p.Leukocytes !== null ? p.Leukocytes : '',
+                    'HB (adj.)': p.HB !== null ? p.HB : '',
+                    'Trombocyten': p.Thrombocytes !== null ? p.Thrombocytes : '',
+                    'Ziektestadium (L1-L8)': p.ziektestadium || 'Unknown',
+                    'Voorspeld Traject (TR1-TR4)': p.ziektetraject || 'Unknown',
+                    'Gebruikt AI Model': p.gebruiktTrajectModel || p.modelGebruikt || 'None'
+                };
+            });
+
+            // Omzetten naar CSV met Excel fix
+            const csvString = Papa.unparse(exportData, {
+                quotes: true, 
+                delimiter: ";" 
+            });
+
+            const excelFix = "\uFEFFsep=;\n";
+            const definitieveCsv = excelFix + csvString;
+
+            // Download triggeren
+            const blob = new Blob([definitieveCsv], { type: 'text/csv;charset=utf-8;' }); 
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Data_Patient_${huidigeNaam}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
     }
 }
 });
