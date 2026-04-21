@@ -1305,3 +1305,151 @@ function maakPopulatieScatterReferentie(patientenLijst) {
         schrijfMeldingInCanvas('PopulatieScatterReferentie', "Unable to calculate PCA.");
     }
 }
+
+// ==========================================================================
+// 4f. alle patiënt GRAPH PROJECTION
+// ==========================================================================
+
+let populatieNetwork = null;
+
+function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
+    const container = document.getElementById('populatieGraphNetwork');
+    if (!container) return;
+
+    if (populatieNetwork) {
+        populatieNetwork.destroy();
+    }
+    container.innerHTML = '';
+
+    if (typeof vis === 'undefined') {
+        schrijfMeldingInDiv("populatieGraphNetwork", "Vis.js library not loaded.");
+        return;
+    }
+
+    // Filter de lijst op basis van de dropdown keuze
+    let gefilterdeLijst = patientenLijst;
+    if (trajectFilter !== 'ALL') {
+        gefilterdeLijst = patientenLijst.filter(p => p.ziektetraject === trajectFilter);
+    }
+
+    if (gefilterdeLijst.length === 0) {
+        schrijfMeldingInDiv("populatieGraphNetwork", `No data available for filter: ${trajectFilter}`);
+        return;
+    }
+
+    // Data verzamelen: Tel de Nodes en Edges
+    const nodeTellers = {};
+    const edgeTellers = {};
+    const patientRoutes = {};
+
+    // Sorteer op visite en bouw de route per patiënt op
+    const gesorteerd = [...gefilterdeLijst].sort((a, b) => a.visit - b.visit);
+    gesorteerd.forEach(p => {
+        if (!p.ziektestadium || p.ziektestadium.startsWith("Onbekend")) return;
+        
+        if (!patientRoutes[p.patient_id]) {
+            patientRoutes[p.patient_id] = [];
+        }
+        patientRoutes[p.patient_id].push(p.ziektestadium);
+    });
+
+    // Tel hoe vaak elke route en node voorkomt
+    Object.values(patientRoutes).forEach(route => {
+        route.forEach(stadium => {
+            nodeTellers[stadium] = (nodeTellers[stadium] || 0) + 1;
+        });
+
+        for (let i = 0; i < route.length - 1; i++) {
+            const from = route[i];
+            const to = route[i+1];
+            if (from === to) continue; 
+            
+            const edgeKey = `${from}_naar_${to}`;
+            if (!edgeTellers[edgeKey]) {
+                edgeTellers[edgeKey] = { from: from, to: to, count: 0 };
+            }
+            edgeTellers[edgeKey].count++;
+        }
+    });
+
+    //=======================================================================
+    // tabel voor hoeveelheid patienten per stadium en voor elke overgang tussen stadia.
+    console.groupCollapsed(`📊 Populatie Graph Data (Filter: ${trajectFilter})`);
+    
+    // Maak een nette array voor de Nodes tabel (gesorteerd van hoog naar laag)
+    const logNodes = Object.keys(nodeTellers).map(s => ({
+        Stadium: s,
+        Aantal_Patienten: nodeTellers[s]
+    })).sort((a,b) => b.Aantal_Patienten - a.Aantal_Patienten);
+    console.log("Knooppunten (Nodes):");
+    console.table(logNodes);
+
+    // Maak een nette array voor de Edges tabel (gesorteerd van hoog naar laag)
+    const logEdges = Object.values(edgeTellers).map(e => ({
+        Van_Stadium: e.from,
+        Naar_Stadium: e.to,
+        Overgangen: e.count
+    })).sort((a,b) => b.Overgangen - a.Overgangen);
+    console.log("Lijnen (Edges / Overgangen):");
+    console.table(logEdges);
+    
+    console.groupEnd();
+    // ======================================================================
+
+
+    // Nodes (Bollen) genereren
+    const maxNodeCount = Math.max(...Object.values(nodeTellers), 1);
+    
+    const nodeData = Object.keys(nodeTellers).map(stadium => {
+        const count = nodeTellers[stadium];
+        
+        const padding = 10 + ((count / maxNodeCount) * 25); 
+
+        return {
+            id: stadium,
+            label: stadium,
+            title: `Stage: ${stadium}<br>Patient Count: ${count}`,
+            shape: 'circle',
+            margin: padding,
+            color: {
+                background: '#2563EB', 
+                border: '#1E3A8A'
+            },
+            font: { 
+                color: '#ffffff', 
+                face: 'Arial, sans-serif', 
+                size: 16, 
+                bold: true
+            }
+        };
+    });
+
+    // Edges (Lijnen) genereren
+    const maxEdgeCount = Math.max(...Object.values(edgeTellers).map(e => e.count), 1);
+
+    const edgeData = Object.values(edgeTellers).map(overgang => {
+        const edgeWidth = 1 + ((overgang.count / maxEdgeCount) * 8);
+        
+        return {
+            from: overgang.from, 
+            to: overgang.to,
+            title: `From ${overgang.from} to ${overgang.to}<br>Transitions: ${overgang.count}`, 
+            arrows: { 
+                to: { enabled: true, scaleFactor: 0.5 + (edgeWidth * 0.1) } 
+            },
+            color: '#9CA3AF', 
+            width: edgeWidth,
+            smooth: { type: 'curvedCW', roundness: 0.2 } 
+        };
+    });
+
+    // figuur Tekenen
+    const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
+    const options = {
+        layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
+        interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true },
+        physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
+    };
+
+    populatieNetwork = new vis.Network(container, data, options);
+}

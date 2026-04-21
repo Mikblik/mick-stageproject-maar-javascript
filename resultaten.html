@@ -297,16 +297,31 @@
 
             <div class="grid grid-cols-3 gap-8">
         
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="figuur 1 voorbeeld"
-                    data-description="informatie dingen">
-                        i
-                    </button>
-                    <div class="bg-white text-black rounded h-96 flex items-center justify-center">
-                        *graph projection*
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
+                <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                        data-title="Population Graph Projection"
+                        data-description="Visualizes the actual pathways (disease stages over time) of the loaded patients. Larger nodes indicate more patients in that stage. Thicker lines indicate a more frequent transition between stages.">
+                    i
+                </button>
+                
+                <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
+                    <div class="flex justify-between items-center mb-2 z-10">
+                        <h3 class="text-md font-bold text-gray-800">Population Pathways</h3>
+                        <div class="flex space-x-2">
+                            <label class="text-xs text-gray-500 font-bold self-center">Filter by Trajectory:</label>
+                            <select id="select-pop-graph-filter" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
+                                <option value="ALL">Show All Patients</option>
+                                <option value="TR1">TR1 Patients Only</option>
+                                <option value="TR2">TR2 Patients Only</option>
+                                <option value="TR3">TR3 Patients Only</option>
+                                <option value="TR4">TR4 Patients Only</option>
+                            </select>
+                        </div>
                     </div>
+                    
+                    <div id="populatieGraphNetwork" class="flex-grow w-full min-h-0 relative"></div>
                 </div>
+            </div>
 
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20 flex-shrink-0"
