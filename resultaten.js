@@ -110,21 +110,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ========================================================================
-    // 5. INDIVIDUELE PATIËNT LOGICA (Event Listeners & Dropdowns)
+    // 5. INDIVIDUELE PATIËNT LOGICA (Zoekbalk, Autocomplete & Rendering)
     // ========================================================================
 
-    // A. Zoek-knop: Teken alle grafieken voor één patiënt
-    patkiezenknop.addEventListener('click', () => {
-        const gekozenpatient = patientinputveld.value.trim();
+    const autocompleteLijst = document.getElementById('autocomplete-lijst');
+
+    // Filter een lijst met álle unieke patiënt ID's in de database
+    const uniekePatientIds = [...new Set(patientenLijst.map(p => p.patient_id || p.Patient || p.patient))].filter(id => id);
+
+    // ========================================================================
+    // FUNCTIE: Teken het complete dashboard voor één specifieke patiënt
+    // ========================================================================
+    function laadPatientDashboard(gekozenpatient) {
+        patientinputveld.value = gekozenpatient; // Zet de naam in de zoekbalk vast
+        
         gekozenpatientlijst = patientenLijst.filter(p => {
             const id = p.patient_id || p.Patient || p.patient;
-            return String(id).toLowerCase() === gekozenpatient.toLowerCase();
+            return String(id).toLowerCase() === String(gekozenpatient).toLowerCase();
         });
         
         console.log("Patient selected:", gekozenpatient);
 
         if (gekozenpatientlijst.length > 0) {
-            
             // 1. Combo Grafiek 
             maakFlexibeleComboGrafiek(gekozenpatientlijst, selectLijn1.value, selectLijn2.value);
 
@@ -145,12 +152,89 @@ document.addEventListener('DOMContentLoaded', () => {
             vulBurenTabel(gekozenpatientlijst);
             vulPatientSpecifiekeLegenda(gekozenpatientlijst);
 
+            // 5. coefficienten impact tabel
+            const selectImpactType = document.getElementById('select-impact-type');
+            if (selectImpactType) {
+                maakImpactTabel(gekozenpatientlijst, selectImpactType.value);
+            }
+
         } else {
             alert("Patient not found in the dataset.");
         }
+    }
+
+    // ========================================================================
+    // AUTOCOMPLETE LOGICA
+    // ========================================================================
+    
+    // Luister naar wat de gebruiker typt in de zoekbalk
+    patientinputveld.addEventListener('input', function() {
+        const invoer = this.value.toLowerCase();
+        autocompleteLijst.innerHTML = ''; // Maak de lijst eerst leeg
+        
+        if (!invoer) {
+            autocompleteLijst.classList.add('hidden');
+            return;
+        }
+
+        // Zoek alle ID's die overeenkomen met de getypte letters
+        const suggesties = uniekePatientIds.filter(id => String(id).toLowerCase().includes(invoer));
+
+        // Als er suggesties zijn, toon ze in het dropdown lijstje
+        if (suggesties.length > 0) {
+            autocompleteLijst.classList.remove('hidden');
+            suggesties.forEach(id => {
+                const li = document.createElement('li');
+                li.className = "p-2 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-0";
+                li.innerText = id;
+                
+                // Als iemand op een suggestie klikt: verberg lijst en laad het dashboard in
+                li.addEventListener('click', () => {
+                    autocompleteLijst.classList.add('hidden');
+                    laadPatientDashboard(id); 
+                });
+                
+                autocompleteLijst.appendChild(li);
+            });
+        } else {
+            autocompleteLijst.classList.add('hidden');
+        }
     });
 
-    // B. Dropdown: Vis.js Netwerk Figuur
+    // Verberg de autocomplete-lijst als de gebruiker ergens anders op de pagina klikt
+    document.addEventListener('click', (e) => {
+        if (e.target !== patientinputveld && e.target !== autocompleteLijst) {
+            autocompleteLijst.classList.add('hidden');
+        }
+    });
+
+    // Zoek-knop: Handmatige zoekopdracht uitvoeren
+    patkiezenknop.addEventListener('click', () => {
+        const gekozenpatient = patientinputveld.value.trim();
+        if(gekozenpatient) {
+            autocompleteLijst.classList.add('hidden'); // Sluit de lijst
+            laadPatientDashboard(gekozenpatient); // Laad de grafieken
+        }
+    });
+
+    // Dropdown: Impact Tabel (Stadium vs Traject)
+    const selectImpactType = document.getElementById('select-impact-type');
+    if (selectImpactType) {
+        selectImpactType.addEventListener('change', () => {
+            if (typeof gekozenpatientlijst !== 'undefined' && gekozenpatientlijst.length > 0) {
+                maakImpactTabel(gekozenpatientlijst, selectImpactType.value);
+            }
+        });
+    }
+
+    // ========================================================================
+    // INITIALISATIE: Laad de allereerste patiënt in zodra de pagina opent
+    // ========================================================================
+    if (uniekePatientIds.length > 0) {
+        laadPatientDashboard(uniekePatientIds[0]);
+    }
+
+    // Dropdown: Vis.js Netwerk Figuur
     if (selectGraphRef) {
         selectGraphRef.addEventListener('change', () => {
             if (gekozenpatientlijst.length > 0) {
@@ -159,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // C. Dropdown: Visite selectie voor Zekerheidsgrafiek
+    // Dropdown: Visite selectie voor Zekerheidsgrafiek
     selectKansVisite.addEventListener('change', () => {
         if (gekozenpatientlijst.length > 0) {
             maakKansenGrafiek(gekozenpatientlijst, selectKansVisite.value, selectKansType.value);
@@ -168,14 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // D. Dropdown: Type selectie (Stadium vs Traject) voor Zekerheidsgrafiek
+    // Dropdown: Type selectie (Stadium vs Traject) voor Zekerheidsgrafiek
     selectKansType.addEventListener('change', () => {
         if (gekozenpatientlijst.length > 0) {
             maakKansenGrafiek(gekozenpatientlijst, selectKansVisite.value, selectKansType.value);
         }
     });
 
-    // E. Dropdowns: Combo Grafiek (Lijn Links & Rechts)
+    // Dropdowns: Combo Grafiek (Lijn Links & Rechts)
     selectLijn1.addEventListener('change', () => {
         if (gekozenpatientlijst.length > 0) {
             maakFlexibeleComboGrafiek(gekozenpatientlijst, selectLijn1.value, selectLijn2.value);

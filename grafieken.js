@@ -31,6 +31,7 @@ function schrijfMeldingInDiv(divId, tekst) {
 }
 
 
+
 // ==========================================================================
 // 2. individuele patiënt grafieken
 // ==========================================================================
@@ -607,6 +608,222 @@ function vulPatientSpecifiekeLegenda(patientLijst) {
     }
 }
 
+// ==========================================================================
+// 2f. GLOBALE MODEL DATA INLADEN VANUIT modellen.csv
+// Zorgt dat de coëfficiënten beschikbaar zijn voor de Explainable AI tabel.
+// ==========================================================================
+let GLOBALE_MODEL_DATA = [];
+
+async function laadModellenCSV() {
+    try {
+        // Zorg dat 'modellen.csv' in dezelfde map staat
+        const response = await fetch('modellen.csv'); 
+        
+        if (!response.ok) {
+            throw new Error(`Bestand niet gevonden (HTTP Status: ${response.status})`);
+        }
+        
+        const csvTekst = await response.text();
+
+        // PapaParse zet de ruwe tekst dynamisch om in een array met objecten
+        Papa.parse(csvTekst, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                GLOBALE_MODEL_DATA = results.data;
+                console.log("✅ modellen.csv succesvol ingeladen:", GLOBALE_MODEL_DATA);
+            }
+        });
+    } catch (error) {
+        console.error("❌ Fout bij laden modellen.csv. Let op: Je moet een lokale server (zoals Live Server) gebruiken om bestanden in te laden via fetch!", error);
+    }
+}
+
+// Roep de functie direct aan zodat hij begint met laden zodra het script start
+laadModellenCSV();
+
+// ==========================================================================
+// 2g. FEATURE IMPACT TABEL (Explainable AI)
+// Laat zien hoeveel impact elke feature had op de voorspelling.
+// - Ziektestadium: Haalt dynamisch de coëfficiënten uit het CSV-geheugen.
+// - Traject (Baseline): Gebruikt de vaste, hardcoded coëfficiënten.
+// ==========================================================================
+
+// De vaste coëfficiënten van jouw Baseline model (Trajecten)
+const BASELINE_COEFFICIENTS = {
+    "TR1": { TJC: 0.777, SJC: -1.032, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 },
+    "TR2": { TJC: 0.595, SJC: -0.699, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 },
+    "TR3": { TJC: 0.597, SJC: -0.808, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 },
+    "TR4": { TJC: 0.619, SJC: -0.359, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 }
+};
+
+function maakImpactTabel(patientData, typeToon) {
+    const tabelBody = document.getElementById('impactTabelBody');
+    const meldingVeld = document.getElementById('impactTabelMelding');
+    
+    if (!tabelBody || !meldingVeld) return;
+
+    tabelBody.innerHTML = '';
+    meldingVeld.classList.add('hidden');
+
+    // ========================================================================
+    // 1. BEPAAL EN FILTER DE WEERGAVE (Stadium vs Traject)
+    // ========================================================================
+    const globaleVoorkeur = sessionStorage.getItem('model_voorkeur'); 
+    const patientModelInfo = patientData[0]?.gebruiktTrajectModel || patientData[0]?.modelGebruikt || "";
+    const isBaselineGebruikt = globaleVoorkeur === 'baseline' || patientModelInfo.toLowerCase().includes('baseline');
+
+    let dataOmTeTonen = [...patientData].sort((a, b) => a.visit - b.visit);
+
+    if (typeToon === "Traject") {
+        if (!isBaselineGebruikt) {
+            meldingVeld.innerText = "Trajectory impact is only available when the Baseline model is used.";
+            meldingVeld.classList.remove('hidden');
+            return;
+        }
+        // Baseline kijkt alleen naar visite 1
+        dataOmTeTonen = dataOmTeTonen.filter(p => Number(p.visit) === 1);
+    }
+
+    if (dataOmTeTonen.length === 0) {
+        meldingVeld.innerText = "No data available to display impact.";
+        meldingVeld.classList.remove('hidden');
+        return;
+    }
+
+    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
+
+    // ========================================================================
+    // 2. HAAL DE GLOBALE DYNAMISCHE STADIUM DATA OP
+    // ========================================================================
+    let alleModelCoefficients = [];
+    
+    if (typeToon === "Stadium") {
+        alleModelCoefficients = GLOBALE_MODEL_DATA;
+
+        // Check of de fetch() de data al succesvol heeft binnengehaald
+        if (!alleModelCoefficients || alleModelCoefficients.length === 0) {
+            meldingVeld.innerText = "Loading coefficients from modellen.csv, or file not found (see console).";
+            meldingVeld.classList.remove('hidden');
+            console.error("Impact Tabel: Kon de coëfficiënten voor het stadium niet inladen uit GLOBALE_MODEL_DATA.");
+            return;
+        }
+    }
+
+    // ========================================================================
+    // 3. BEREKEN DE IMPACT PER VISITE
+    // ========================================================================
+    let maxAbsoluteImpact = 0;
+    
+    const impactDataMatrix = dataOmTeTonen.map(p => {
+        const rowImpacts = {};
+        
+        let coeffObject = null;
+        let modelNaam = "";
+        let targetResultaat = "";
+
+        if (typeToon === "Traject") {
+            // -- TRAJECT LOGICA (Hardcoded uit Baseline) --
+            modelNaam = "Baseline";
+            targetResultaat = p.ziektetraject;
+            coeffObject = BASELINE_COEFFICIENTS[targetResultaat];
+
+        } else {
+            // -- STADIUM LOGICA (Dynamisch uit ingeladen CSV) --
+            modelNaam = p.stadiumModelGebruikt || p.modelGebruikt || "Goud (Alles)";
+            targetResultaat = p.ziektestadium;
+
+            const coeffRij = alleModelCoefficients.find(row => {
+                if (!row.ModelNaam || !row.Target) return false;
+                return String(row.ModelNaam).trim().toLowerCase() === String(modelNaam).trim().toLowerCase() &&
+                       String(row.Target).trim().toLowerCase() === String(targetResultaat).trim().toLowerCase();
+            });
+
+            if (coeffRij) {
+                coeffObject = coeffRij;
+            } else {
+                console.warn(`Impact Tabel Waarschuwing: Geen coëfficiënten gevonden voor Model: '${modelNaam}' en Target: '${targetResultaat}'. Staan deze exact zo in de CSV?`);
+            }
+        }
+
+        // Berekeningen uitvoeren
+        features.forEach(f => {
+            const val = p[f];
+            
+            // Als er geen patiëntdata is óf geen coëfficiënt
+            if (val === null || val === undefined || val === "" || !coeffObject || coeffObject[f] === "" || coeffObject[f] === undefined) {
+                rowImpacts[f] = null;
+            } else {
+                const coeff = Number(coeffObject[f]);
+                const impact = Number(val) * coeff;
+                
+                // Als de coëfficiënt 0 is (zoals ESR in het traject model), slaan we de impact als nul op, niet als null.
+                rowImpacts[f] = impact; 
+                
+                if (Math.abs(impact) > maxAbsoluteImpact) {
+                    maxAbsoluteImpact = Math.abs(impact);
+                }
+            }
+        });
+        
+        return { visit: p.visit, impacts: rowImpacts, raw: p, model: modelNaam, target: targetResultaat };
+    });
+
+    if (maxAbsoluteImpact === 0) maxAbsoluteImpact = 1;
+
+    // ========================================================================
+    // 4. TABEL OPBOUWEN EN CELLEN KLEUREN
+    // ========================================================================
+    impactDataMatrix.forEach(rijData => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-gray-100 hover:bg-gray-50";
+
+        // Visite Kolom (Met handige tooltip voor debugging/inzicht!)
+        const tdVisite = document.createElement('td');
+        tdVisite.className = "px-4 py-3 font-bold border-r bg-gray-50 cursor-help";
+        tdVisite.title = `Model: ${rijData.model}\nTarget: ${rijData.target}`;
+        tdVisite.innerText = `Visit ${rijData.visit}`;
+        tr.appendChild(tdVisite);
+
+        features.forEach(f => {
+            const td = document.createElement('td');
+            td.className = "px-4 py-3 border-r border-white font-medium transition-colors duration-200";
+            
+            const impactScore = rijData.impacts[f];
+
+            if (impactScore === null) {
+                td.innerHTML = `<span class="text-gray-300">-</span>`;
+            } else if (impactScore === 0) {
+                // Voor features met weging 0 (zoals HB bij Traject baseline)
+                td.innerHTML = `
+                    <div>${Number(rijData.raw[f]).toFixed(1)}</div>
+                    <div class="text-[10px] text-gray-400 mt-1 font-bold">0.00</div>
+                `;
+            } else {
+                const isPositief = impactScore > 0;
+                const formattedScore = (isPositief ? "+" : "") + impactScore.toFixed(2);
+                
+                const intensiteit = Math.min((Math.abs(impactScore) / maxAbsoluteImpact) * 0.85, 0.85);
+
+                if (isPositief) {
+                    td.style.backgroundColor = `rgba(239, 68, 68, ${intensiteit})`; // Rood
+                    td.style.color = intensiteit > 0.5 ? "white" : "black"; 
+                } else {
+                    td.style.backgroundColor = `rgba(59, 130, 246, ${intensiteit})`; // Blauw
+                    td.style.color = intensiteit > 0.5 ? "white" : "black";
+                }
+
+                td.innerHTML = `
+                    <div>${Number(rijData.raw[f]).toFixed(1)}</div>
+                    <div class="text-[10px] opacity-75 mt-1 font-bold tracking-wider">${formattedScore}</div>
+                `;
+            }
+            tr.appendChild(td);
+        });
+
+        tabelBody.appendChild(tr);
+    });
+}
 
 // ==========================================================================
 // 3. 'Alle' patiënten grafieken 

@@ -42,9 +42,15 @@
         <div id="individuele-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
             <!-- Hier-->
             <div class="flex justify-between items-center mb-8 bg-blue-900 p-4 rounded-lg shadow">
-                <div class="flex items-center space-x-4">
-                    <input type="text" id="DePatiënt" placeholder="Enter patient name..." 
-                           class="p-2 rounded text-black border-none focus:ring-2 focus:ring-blue-500 shadow-inner">
+                
+                <div class="flex items-center space-x-4 relative"> 
+                    <div class="relative w-64">
+                        <input type="text" id="DePatiënt" autocomplete="off" placeholder="Enter patient ID..." 
+                               class="w-full p-2 rounded text-black border-none focus:ring-2 focus:ring-blue-500 shadow-inner">
+                        
+                        <ul id="autocomplete-lijst" class="absolute z-50 w-full bg-white border border-gray-300 rounded mt-1 max-h-60 overflow-y-auto hidden text-black shadow-lg">
+                        </ul>
+                    </div>
                     <button id="verstuurKnop" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded shadow transition-colors">
                         Search
                     </button>
@@ -273,14 +279,56 @@
 
                     </div>
                 </div>
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative col-span-3">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                            data-title="Model Impact & Explainability"
+                            data-description="This table shows how much each clinical feature contributed to the AI's prediction. Red means it pushed the prediction higher/towards the outcome. Blue means it lowered the prediction. Darker colors mean stronger impact.">
+                        i
+                    </button>
+                    
+                    <div class="bg-white text-black rounded p-4 h-auto flex flex-col white-box transition-all duration-300 w-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-bold text-gray-800">Feature Impact Breakdown</h3>
+                            
+                            <div class="flex space-x-2">
+                                <label class="text-xs text-gray-500 font-bold self-center">Analyze:</label>
+                                <select id="select-impact-type" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    <option value="Stadium">Disease Stage (All Visits)</option>
+                                    <option value="Traject">Trajectory (Baseline Only)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm text-center border-collapse">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 border-b border-r">Visit</th>
+                                        <th class="px-4 py-2 border-b">TJC</th>
+                                        <th class="px-4 py-2 border-b">SJC</th>
+                                        <th class="px-4 py-2 border-b">ESR</th>
+                                        <th class="px-4 py-2 border-b">Leukocytes</th>
+                                        <th class="px-4 py-2 border-b">HB</th>
+                                        <th class="px-4 py-2 border-b">Thrombocytes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="impactTabelBody">
+                                    </tbody>
+                            </table>
+                        </div>
+                        <p id="impactTabelMelding" class="hidden text-center p-4 text-gray-500 italic"></p>
+                    </div>
+                </div>
                     
             
                 </div>
             </div>
 
+            <!---->
+        
+        <!-- Alle patienten pagina begin-->
         <div id="alle-patienten-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
 
-            <!-- hier-->
             <div class="flex justify-between items-center mb-6 bg-blue-900 p-4 rounded-lg shadow">
                 <div>
                     <h2 class="text-2xl font-bold text-white">Populatie Overzicht</h2>
