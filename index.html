@@ -6,7 +6,6 @@
     <title>RA Trajectory Predictor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Stijlen zijn hetzelfde gebleven */
         .nav-link.disabled {
             background-color: #d1d5db;
             color: #6b7280;
@@ -17,17 +16,16 @@
             border: 2px solid #ef4444;
             background-color: #fef2f2;
         }
-        /* We voegen 'hidden' toe om elementen standaard te verbergen */
         .hidden {
             display: none;
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans p-6">
+<body class="bg-gray-100 font-sans p-6 relative">
 
-    <div class="container mx-auto max-w-6xl">
+    <div class="container mx-auto max-w-6xl relative">
 
-        <header class="flex justify-center space-x-4 mb-10 relative">
+        <header class="flex justify-center space-x-4 mb-10">
             <a href="#" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
                 Home
             </a>
@@ -39,12 +37,20 @@
             </a>
         </header>
 
-        <button id="settings-knop" class="absolute top-0 right-0 p-2 text-blue-700 hover:text-blue-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
+        <div class="absolute top-0 right-0 flex space-x-2">
+            <button id="help-knop" class="p-2 text-blue-700 hover:text-blue-500 transition-colors" title="Help & Information">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </button>
+            
+            <button id="settings-knop" class="p-2 text-blue-700 hover:text-blue-500 transition-colors" title="Model Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </div>
 
         <div id="settings-dropdown" class="hidden absolute top-12 right-0 w-48 bg-white rounded-md shadow-lg py-1 z-10">
             <a href="#" id="model-auto" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Both models (default)</a>
@@ -93,42 +99,42 @@
                     <div class="grid grid-cols-1 gap-y-3">
 
                         <div>
-                            <input type="text" value="test" id="patient_id" name="patient_id" placeholder="Enter Patient name here"
+                            <input type="text" id="patient_id" name="patient_id" placeholder="Enter Patient ID here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-patient_id" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="visit" name="visit" placeholder="Enter Patient visit here"
+                            <input type="text" id="visit" name="visit" placeholder="Enter Patient visit here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-visit" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="TJC" name="TJC" placeholder="Enter TJC28 here"
+                            <input type="text" id="TJC" name="TJC" placeholder="Enter TJC28 here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-TJC" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="SJC" name="SJC" placeholder="Enter SJC28 here"
+                            <input type="text" id="SJC" name="SJC" placeholder="Enter SJC28 here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-SJC" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="ESR" name="ESR" placeholder="Enter ESR here"
+                            <input type="text" id="ESR" name="ESR" placeholder="Enter ESR here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-ESR" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="Leukocytes" name="Leukocytes" placeholder="Enter Leukocytes here"
+                            <input type="text" id="Leukocytes" name="Leukocytes" placeholder="Enter Leukocytes here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-Leukocytes" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="HB" name="HB" placeholder="Enter HB (adj) here"
+                            <input type="text" id="HB" name="HB" placeholder="Enter HB here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-HB" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
                         <div>
-                            <input type="text" value=4 id="Thrombocytes" name="Thrombocytes" placeholder="Enter Thrombocytes here"
+                            <input type="text" id="Thrombocytes" name="Thrombocytes" placeholder="Enter Thrombocytes here"
                                    class="w-full p-3 rounded-md text-gray-800 shadow-inner">
                             <p id="error-Thrombocytes" class="text-red-400 text-sm mt-1 px-1 hidden"></p>
                         </div>
@@ -143,9 +149,48 @@
             </div>
 
         </div> 
+        
+        <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-[100] p-4 transition-opacity duration-300">
+            <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 relative">
+                
+                <button id="close-help-btn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                
+                <h2 class="text-2xl font-bold text-blue-900 mb-4">Help & Information</h2>
+                <p class="text-gray-700 mb-6 text-sm">
+                    Welcome to the RA Trajectory Predictor. You can upload a dataset (CSV) containing multiple patients,
+                    or fill in the values of a single patient manually.
+                    The avaible algorithms that could be used on the patiënts can be selected on the top right side of the page by clicking on the gear.
+                </p>
+                
+
+                <div class="mb-6">
+                    <h3 class="font-bold text-gray-800 border-b border-gray-200 pb-1 mb-2">Documentation</h3>
+                    <p class="text-xs text-gray-500 mb-2">The algorithms that are used within this tool are based on the following paper.</p>
+                    
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0003496725009008?via%3Dihub" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center text-sm font-medium">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Time-independent disease state identification defines distinct trajectories determined by localised vs systemic inflammation in patients with early rheumatoid arthritis
+
+                    </a>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <h3 class="font-bold text-blue-900 mb-1">CSV Template</h3>
+                    <p class="text-xs text-blue-800 mb-4">To successfully process a population, your file must contain the correct column names (e.g. <i>patient_id, visit, TJC, SJC</i>). Download our empty template below.</p>
+                    
+                    <a href="EmptyPatiëntTemplate.csv" download class="w-full justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded shadow text-sm flex items-center transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Download Excel/CSV Template
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
     </div> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="app.js" defer></script>
-
 </body>
 </html>

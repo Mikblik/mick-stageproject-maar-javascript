@@ -285,4 +285,31 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault(); geselecteerdeModel = 'traject'; settingsDropdown.classList.add('hidden');
     });
 
+    // ==========================================================================
+    // HELP MODAL LOGICA // Dit is voor de extra informatie pop-up
+    // ==========================================================================
+    const helpKnop = document.getElementById('help-knop');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('close-help-btn');
+
+    if (helpKnop && helpModal && closeHelpBtn) {
+        // Openen
+        helpKnop.addEventListener('click', (e) => {
+            e.preventDefault();
+            helpModal.classList.remove('hidden');
+        });
+
+        // Sluiten via kruisje
+        closeHelpBtn.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+
+        // Sluiten door naast de pop-up in het donkere gedeelte te klikken
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.add('hidden');
+            }
+        });
+    }
+
 });
