@@ -68,21 +68,21 @@ const REF_TRAJECT_BASELINE = {
 };
 
 const UITLEG_STADIA = {
-    "L1": "uitleg",
-    "L2": "uitleg",
-    "L3": "uitleg",
-    "L4": "uitleg",
-    "L5": "uitleg",
-    "L6": "uitleg",
-    "L7": "uitleg",
-    "L8": "uitleg"
+    "L1": "Remission: Near zero SJC/TJC, lowest ESR, and normal leukocytes/HB. Common in later visits.",
+    "L2": "Mild systemic inflammation: Low SJC/TJC, elevated ESR, and slightly increased leukocytes/thrombocytes. Mostly occurs after 200 days.",
+    "L3": "Leukocytosis: High leukocytes (>10) with low joint inflammation. Most frequent 1 year post-baseline.",
+    "L4": "Local joint inflammation: High SJC/TJC, but without elevated ESR. Occurs early and after 1 year.",
+    "L5": "Elevated ESR: Moderate SJC/TJC with raised ESR. Common at baseline.",
+    "L6": "Strongly elevated ESR: Moderate SJC/TJC with highly elevated ESR. Similar to L5, but more severe.",
+    "L7": "Severe local inflammation: Highest SJC/TJC combined with elevated ESR. Common at baseline.",
+    "L8": "Early disease state: Low SJC/TJC and low HB. Exclusively occurs at baseline."
 };
 
 const UITLEG_TRAJECTEN = {
-    "TR1": "uitleg",
-    "TR2": "uitleg",
-    "TR3": "uitleg",
-    "TR4": "uitleg"
+    "TR1": "Systemic inflammation: Characterized by elevated ESR. Patients are predominantly older and female.",
+    "TR2": "Best prognosis: Starts with joint inflammation but quickly leads toward full remission.",
+    "TR3": "Elevated leukocytes: Initially resembles TR2, but fails to reach remission.",
+    "TR4": "Persistent joint inflammation: High SJC/TJC without rapid improvement. Patients often remain stuck in stage L4 (normal ESR)."
 };
 
 const REF_GRAPH_PER_TRAJECT = {
