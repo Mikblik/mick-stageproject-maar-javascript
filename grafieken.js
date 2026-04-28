@@ -631,7 +631,7 @@ async function laadModellenCSV() {
             skipEmptyLines: true,
             complete: function(results) {
                 GLOBALE_MODEL_DATA = results.data;
-                console.log("✅ modellen.csv succesvol ingeladen:", GLOBALE_MODEL_DATA);
+                console.log("modellen.csv succesvol ingeladen:", GLOBALE_MODEL_DATA);
                 document.dispatchEvent(new Event('modellenKlaar'));
             }
         });
