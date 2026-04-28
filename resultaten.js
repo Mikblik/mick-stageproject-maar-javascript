@@ -230,10 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================================
     // INITIALISATIE: Laad de allereerste patiënt in zodra de pagina opent
     // ========================================================================
-    if (uniekePatientIds.length > 0) {
-        laadPatientDashboard(uniekePatientIds[0]);
-    }
-
+    document.addEventListener('modellenKlaar', () => {
+        if (uniekePatientIds.length > 0) {
+            laadPatientDashboard(uniekePatientIds[0]);
+        }
+    });
+    
     // Dropdown: Vis.js Netwerk Figuur
     if (selectGraphRef) {
         selectGraphRef.addEventListener('change', () => {

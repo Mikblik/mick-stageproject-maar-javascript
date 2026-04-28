@@ -632,10 +632,11 @@ async function laadModellenCSV() {
             complete: function(results) {
                 GLOBALE_MODEL_DATA = results.data;
                 console.log("✅ modellen.csv succesvol ingeladen:", GLOBALE_MODEL_DATA);
+                document.dispatchEvent(new Event('modellenKlaar'));
             }
         });
     } catch (error) {
-        console.error("❌ Fout bij laden modellen.csv. Let op: Je moet een lokale server (zoals Live Server) gebruiken om bestanden in te laden via fetch!", error);
+        console.error(" Fout bij laden modellen.csv. Let op: Je moet een lokale server (zoals Live Server) gebruiken om bestanden in te laden via fetch!", error);
     }
 }
 

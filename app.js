@@ -114,14 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
         csvErrorMessage.innerText = '';
 
         if (!csvFileInput.files || csvFileInput.files.length === 0) {
-            showCsvError("Selecteer alstublieft een patiënten CSV-bestand.");
+            showCsvError("Please select a patient CSV file.");
             return;
         }
 
         const file = csvFileInput.files[0];
 
         if (!file.name.toLowerCase().endsWith('.csv')) {
-            showCsvError("Het geüploade bestand moet een .csv bestand zijn.");
+            showCsvError("An .CSV file is required.");
             return;
         }
 

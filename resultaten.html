@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Traject Voorspeller Resultaten</title>
+    <title>RA Trajectory Predictor Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Stijlen zijn hetzelfde gebleven. */
@@ -32,15 +32,14 @@
                 Home
             </a>
             <a href="#" id="nav-patient" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
-                een Patiënt
+                Single Patient
             </a>
             <a href="#" id="nav-all-patients" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
-                Alle patiënten
+                Population Overview
             </a>
         </header>
 
         <div id="individuele-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
-            <!-- Hier-->
             <div class="flex justify-between items-center mb-8 bg-blue-900 p-4 rounded-lg shadow">
                 
                 <div class="flex items-center space-x-4 relative"> 
@@ -65,34 +64,33 @@
             </div>
 
             <div class="grid grid-cols-3 gap-8">
-            <!-- eerste figuur 2 feature trendlijn indiv pagina-->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+            <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Feature Vergelijking"
-                            data-description="Vergelijk het ziektestadium met klinische waardes over de tijd.">
+                            data-title="Feature Comparison"
+                            data-description="Compare the disease stage with clinical values over time.">
                         i
                     </button>
 
                     <div class="bg-white text-black rounded-lg p-4 h-auto flex flex-col">
                         
-                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Verloop & Features</h3>
+                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Progression & Features</h3>
 
                         <div class="flex space-x-2 mb-4">
                             
                             <div class="w-1/2">
                                 <label for="select-lijn-1" class="block text-[10px] font-bold text-blue-600 mb-1 uppercase">
-                                    Links (Blauw)
+                                    Left (Blue)
                                 </label>
                                 <div class="relative">
                                     <select id="select-lijn-1" 
                                             class="appearance-none w-full bg-blue-50 border border-blue-200 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:bg-white focus:border-blue-500 cursor-pointer">
-                                        <option value="Ziektestadium">Ziektestadium</option> <option value="TJC">TJC</option>
+                                        <option value="Ziektestadium">Disease Stage</option> <option value="TJC">TJC</option>
                                         <option value="SJC">SJC</option>
                                         <option value="ESR">ESR</option>
                                         <option value="HB">HB</option>
-                                        <option value="Leukocytes">Leukocyten</option>
-                                        <option value="Thrombocytes">Thrombocyten</option>
+                                        <option value="Leukocytes">Leukocytes</option>
+                                        <option value="Thrombocytes">Thrombocytes</option>
                                     </select>
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-600">
                                         <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -102,18 +100,18 @@
 
                             <div class="w-1/2">
                                 <label for="select-lijn-2" class="block text-[10px] font-bold text-red-600 mb-1 uppercase">
-                                    Rechts (Rood)
+                                    Right (Red)
                                 </label>
                                 <div class="relative">
                                     <select id="select-lijn-2" 
                                             class="appearance-none w-full bg-red-50 border border-red-200 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:bg-white focus:border-red-500 cursor-pointer">
                                         <option value="ESR" selected>ESR</option>
-                                        <option value="Ziektestadium">Ziektestadium</option>
+                                        <option value="Ziektestadium">Disease Stage</option>
                                         <option value="TJC">TJC</option>
                                         <option value="SJC">SJC</option>
                                         <option value="HB">HB</option>
-                                        <option value="Leukocytes">Leukocyten</option>
-                                        <option value="Thrombocytes">Thrombocyten</option>
+                                        <option value="Leukocytes">Leukocytes</option>
+                                        <option value="Thrombocytes">Thrombocytes</option>
                                     </select>
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-red-500">
                                         <svg class="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -128,23 +126,22 @@
 
                     </div>
                 </div>
-                <!-- tweede figuur // indiv pagina-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Zekerheid Model"
-                            data-description="Bekijk de voorspelling per visite. Kies tussen Ziektestadium (L1-L8) of Traject (TR1-TR4).">
+                            data-title="Model Confidence"
+                            data-description="View the prediction certainty per visit. Choose between Disease Stage (L1-L8) or Trajectory (TR1-TR4).">
                         i
                     </button>
 
                     <div class="bg-white text-black rounded-lg p-4 h-auto flex flex-col">
                         
-                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Zekerheid & Voorspelling</h3>
+                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Confidence & Prediction</h3>
 
                         <div class="flex space-x-2 mb-4">
                             
                             <div class="w-1/2">
-                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Kies Visite</label>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Select Visit</label>
                                 <div class="relative">
                                     <select id="select-kans-visite" 
                                             class="appearance-none w-full bg-gray-50 border border-gray-300 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
@@ -156,12 +153,12 @@
                             </div>
 
                             <div class="w-1/2">
-                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Kies Type</label>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Select Type</label>
                                 <div class="relative">
                                     <select id="select-kans-type" 
                                             class="appearance-none w-full bg-gray-50 border border-gray-300 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
-                                        <option value="Stadium">Ziektestadium</option>
-                                        <option value="Traject">Traject</option>
+                                        <option value="Stadium">Disease Stage</option>
+                                        <option value="Traject">Trajectory</option>
                                     </select>
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-600">
                                         <svg class="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -175,11 +172,10 @@
                         </div>
                     </div>
                 </div>
-                <!-- derde figuur graph projection indiv -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Graph Projection vs Referentie"
-                            data-description="Dit figuur toont de ziektestadiahistorie van de patiënt afgezet tegen de meest voorkomende trajecten in de referentiepopulatie.">
+                            data-title="Graph Projection vs Reference"
+                            data-description="This chart shows the patient's disease stage history plotted against the most common pathways in the reference population.">
                         i
                     </button>
                     
@@ -188,12 +184,12 @@
                     <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
                         
                         <div class="flex justify-between items-center mb-2 z-10">
-                            <h3 class="text-md font-bold text-gray-800">Route vs Referentie</h3>
+                            <h3 class="text-md font-bold text-gray-800">Pathway vs Reference</h3>
                             <select id="select-graph-ref" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
-                                <option value="TR1">Referentie TR1</option>
-                                <option value="TR2">Referentie TR2</option>
-                                <option value="TR3">Referentie TR3</option>
-                                <option value="TR4">Referentie TR4</option>
+                                <option value="TR1">Reference TR1</option>
+                                <option value="TR2">Reference TR2</option>
+                                <option value="TR3">Reference TR3</option>
+                                <option value="TR4">Reference TR4</option>
                             </select>
                         </div>
 
@@ -203,35 +199,34 @@
 
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Afwijking tegen ziektestadia referentie"
-                            data-description="Rood = Waarde is hoger dan gemiddeld voor dit stadium. Blauw = Lager.">
+                            data-title="Deviation from Disease Stage Reference"
+                            data-description="Red = Value is higher than average for this stage. Blue = Lower.">
                         i
                     </button>
                     
                     <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full">
-                        <h3 class="text-md font-bold text-gray-800 mb-2 text-center">Afwijking vs Ziektestadia Ref.</h3>
+                        <h3 class="text-md font-bold text-gray-800 mb-2 text-center">Deviation vs Disease Stage Ref.</h3>
                         <div id="heatmapChart" class="flex-grow w-full min-h-0"></div>
                     </div>
                 </div>
 
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Afwijking Traject Baseline"
-                            data-description="Hier zie je de afwijking ten opzichte van de baseline van het voorspelde traject.">
+                            data-title="Deviation from Trajectory Baseline"
+                            data-description="Here you see the deviation compared to the baseline of the predicted trajectory.">
                         i
                     </button>
 
                     <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full">
-                        <h3 class="text-md font-bold text-gray-800 mb-2 text-center">Afwijking vs Traject Baseline</h3>
+                        <h3 class="text-md font-bold text-gray-800 mb-2 text-center">Deviation vs Trajectory Baseline</h3>
                         <div id="trajectHeatmapChart" class="flex-grow w-full min-h-0"></div>
                     </div>
                 </div>
 
-                <!-- TABEL VOOR INDIVIDU PAGINA 5 BESTE BUREN-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Vergelijkbare Patiënten"
-                            data-description="Dit zijn patiënten uit de database die hetzelfde patroon vertonen. Bij het KNN model zijn dit de 'dichtstbijzijnde buren'. Bij de Baseline zijn dit voorbeeldpatiënten van het voorspelde traject.">
+                            data-title="Similar Patients"
+                            data-description="These are patients from the database exhibiting the same pattern. In the KNN model, these are the nearest neighbors. In the Baseline, these are reference patients for the predicted trajectory.">
                         i
                     </button>
                     
@@ -239,9 +234,9 @@
                         <table class="min-w-full text-sm text-left text-gray-500">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
                                 <tr>
-                                    <th scope="col" class="px-4 py-2">Patiënt ID</th>
-                                    <th scope="col" class="px-4 py-2">Traject</th>
-                                    <th scope="col" class="px-4 py-2">Afstand / Info</th>
+                                    <th scope="col" class="px-4 py-2">Patient ID</th>
+                                    <th scope="col" class="px-4 py-2">Trajectory</th>
+                                    <th scope="col" class="px-4 py-2">Distance / Info</th>
                                 </tr>
                             </thead>
                             <tbody id="burenTabelBody">
@@ -251,18 +246,17 @@
                         <p id="geenBurenMelding" class="hidden text-center p-6 text-gray-500 italic"></p>
                     </div>
                 </div>
-                <!-- ziektestadia/traject uitleg tabel-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Legenda & Uitleg"
-                            data-description="Hier vindt u de definities van de verschillende ziektestadia (L1-L8) en de ziektetrajecten (TR1-TR4).">
+                            data-title="Legend & Explanation"
+                            data-description="Here you can find the definitions of the different disease stages (L1-L8) and trajectories (TR1-TR4).">
                         i
                     </button>
                     
                     <div class="bg-white text-black rounded h-48 overflow-y-auto p-2">
                         
                         <h4 class="font-bold text-sm text-blue-800 mb-2 border-b border-blue-200 pb-1 sticky top-0 bg-white">
-                            Ziektetrajecten
+                            Trajectories
                         </h4>
                         <table class="w-full text-xs text-left mb-4">
                             <tbody id="legendaTrajectBody">
@@ -270,7 +264,7 @@
                         </table>
 
                         <h4 class="font-bold text-sm text-blue-800 mb-2 border-b border-blue-200 pb-1 sticky top-0 bg-white">
-                            Ziektestadia
+                            Disease Stages
                         </h4>
                         <table class="w-full text-xs text-left">
                             <tbody id="legendaStadiaBody">
@@ -324,25 +318,20 @@
                 </div>
             </div>
 
-            <!---->
-        
-        <!-- Alle patienten pagina begin-->
-        <div id="alle-patienten-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
+            <div id="alle-patienten-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
 
             <div class="flex justify-between items-center mb-6 bg-blue-900 p-4 rounded-lg shadow">
                 <div>
-                    <h2 class="text-2xl font-bold text-white">Populatie Overzicht</h2>
-                    <p class="text-blue-200 text-sm">Bekijk de AI-analyses van alle ingeladen patiënten.</p>
+                    <h2 class="text-2xl font-bold text-white">Population Overview</h2>
+                    <p class="text-blue-200 text-sm">View the results of all loaded patients.</p>
                 </div>
                 <button id="exportCsvKnop" class="bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-6 rounded-lg shadow-md flex items-center transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Download Resultaten (CSV)
+                    Download Results (CSV)
                 </button>
             </div>
-            <!-- hier-->
-
             <div class="grid grid-cols-3 gap-8">
         
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
@@ -373,8 +362,8 @@
 
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20 flex-shrink-0"
-                    data-title="Stadia vs Referentie"
-                    data-description="Hier zie je de afwijking van onze patiënten ten opzichte van de verwachte referentiewaarden. Rood is hoger, blauw is lager.">
+                    data-title="Stages vs Reference"
+                    data-description="Shows the deviation of our patients compared to the expected reference values. Red is higher, blue is lower.">
                         i
                     </button>
                     
@@ -388,19 +377,18 @@
 
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="figuur 1 voorbeeld"
-                    data-description="informatie dingen">
+                    data-title="Trajectory vs Baseline"
+                    data-description="Deviation of the population compared to the predicted trajectory baseline.">
                         i
                     </button>
                     <div class="bg-white text-black rounded h-96 flex items-center justify-center">
                         <div id="populatieTrajectHeatmapChart"></div>
                     </div>
                 </div>
-                <!-- PCA CSV Alle patient pagina-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Spreiding Nieuwe Patiënten"
-                            data-description="Elk punt is een patiënt uit uw geüploade bestand. De kleuren geven het voorspelde traject aan. Zitten de kleuren mooi bij elkaar? Dan werkt het model goed.">
+                            data-title="Spread of New Patients (PCA)"
+                            data-description="Each point is a patient from your uploaded file. Colors indicate the predicted trajectory. Good clustering means the model performs well.">
                         i
                     </button>
                     <div class="bg-white text-black rounded p-2 h-64">
@@ -408,11 +396,10 @@
                     </div>
                 </div>
 
-                <!-- PCA op ref all patient page-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20"
-                            data-title="PCA Populatie op Referentie"
-                            data-description="Deze plot toont de spreiding van de CSV-patiënten (stippen) rondom de 4 vaste referentie-zwaartepunten (grote ruiten). Zo zie je direct of nieuwe data overeenkomt met de verwachting.">
+                            data-title="PCA Population vs Reference"
+                            data-description="This plot shows the spread of patients (dots) around the 4 fixed reference centers (diamonds). This immediately shows if new data aligns with expectations.">
                         i
                     </button>
                     <div class="extra-info hidden mt-2 mb-4 p-4 bg-blue-900 rounded-lg border border-blue-700 flex-shrink-0"></div>
@@ -421,45 +408,44 @@
                         <canvas id="PopulatieScatterReferentie" class="w-full h-full"></canvas>
                     </div>
                 </div>
-                <!-- ALLE PATIENT PAGINA TRENDLIJN FEATURE FIGUUR -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Traject Trends Vergelijking"
-                            data-description="Vergelijk alle 4 de trajecten tegelijkertijd. Blauwe lijnen horen bij de linker as, rode lijnen bij de rechter as. De lijnstijl (vast, gestippeld) geeft het traject aan.">
+                            data-title="Trajectory Trend Comparison"
+                            data-description="Compare all 4 trajectories simultaneously. Blue lines correspond to the left axis, red lines to the right axis. Line style indicates the trajectory.">
                         i
                     </button>
 
                     <div class="bg-white text-black rounded-lg p-4 h-auto flex flex-col">
                         
-                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Vergelijking Alle Trajecten (TR1 - TR4)</h3>
+                        <h3 class="text-md font-bold text-gray-800 mb-3 text-center">Comparison All Trajectories (TR1 - TR4)</h3>
 
                         <div class="flex space-x-4 mb-4">
                             
                             <div class="w-1/2">
-                                <label class="block text-[10px] font-bold text-blue-600 mb-1 uppercase">Links (Blauw)</label>
+                                <label class="block text-[10px] font-bold text-blue-600 mb-1 uppercase">Left (Blue)</label>
                                 <div class="relative">
                                     <select id="select-trend-feat1" class="appearance-none w-full bg-blue-50 border border-blue-200 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:border-blue-500 cursor-pointer">
                                         <option value="TJC" selected>TJC</option>
                                         <option value="SJC">SJC</option>
                                         <option value="ESR">ESR</option>
                                         <option value="HB">HB</option>
-                                        <option value="Leukocytes">Leukocyten</option>
-                                        <option value="Thrombocytes">Thrombocyten</option>
+                                        <option value="Leukocytes">Leukocytes</option>
+                                        <option value="Thrombocytes">Thrombocytes</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="w-1/2">
-                                <label class="block text-[10px] font-bold text-red-600 mb-1 uppercase">Rechts (Rood)</label>
+                                <label class="block text-[10px] font-bold text-red-600 mb-1 uppercase">Right (Red)</label>
                                 <div class="relative">
                                     <select id="select-trend-feat2" class="appearance-none w-full bg-red-50 border border-red-200 text-gray-700 py-1 px-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:border-red-500 cursor-pointer">
                                         <option value="SJC" selected>SJC</option>
                                         <option value="TJC">TJC</option>
                                         <option value="ESR">ESR</option>
                                         <option value="HB">HB</option>
-                                        <option value="Leukocytes">Leukocyten</option>
-                                        <option value="Thrombocytes">Thrombocyten</option>
+                                        <option value="Leukocytes">Leukocytes</option>
+                                        <option value="Thrombocytes">Thrombocytes</option>
                                     </select>
                                 </div>
                             </div>
@@ -470,30 +456,19 @@
 
                     </div>
                 </div>
-
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="figuur 1 voorbeeld"
-                    data-description="informatie dingen">
-                        i
-                    </button>
-                    <div class="bg-white text-black rounded h-48 flex items-center justify-center">
-                        *shap figuur*
-                    </div>
-                </div>
                 
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Legenda Populatie"
-                            data-description="Hier vindt u de definities van alle verschillende ziektestadia en ziektetrajecten die in uw geüploade populatie zijn gevonden.">
+                            data-title="Population Legend"
+                            data-description="Here you will find the definitions of all different disease stages and trajectories found in your uploaded population.">
                         i
                     </button>
                     
                     <div class="bg-white text-black rounded h-auto min-h-[12rem] overflow-y-auto p-4">
                         
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Legenda</h3>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Legend</h3>
 
-                        <h4 class="font-bold text-sm text-blue-800 mb-2">Gevonden Trajecten</h4>
+                        <h4 class="font-bold text-sm text-blue-800 mb-2">Found Trajectories</h4>
                         <div class="overflow-x-auto mb-6">
                             <table class="w-full text-left text-sm text-gray-500">
                                 <tbody id="populatieLegendaTrajectBody">
@@ -501,7 +476,7 @@
                             </table>
                         </div>
 
-                        <h4 class="font-bold text-sm text-blue-800 mb-2">Gevonden Ziektestadia</h4>
+                        <h4 class="font-bold text-sm text-blue-800 mb-2">Found Disease Stages</h4>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm text-gray-500">
                                 <tbody id="populatieLegendaStadiaBody">
