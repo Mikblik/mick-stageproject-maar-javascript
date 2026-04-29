@@ -331,7 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let actieveWitteBox = null;
     let grafiekPlaceholder = null;
-    let aangepasteElementen = []; 
+
+    // Deze '!' classes forceren de modal layout, zonder de originele classes te slopen
+    const modalClasses = ['!h-full', '!w-full', '!flex-1', '!flex', '!flex-col', '!overflow-hidden', '!min-h-0'];
 
     allInfoButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -355,34 +357,14 @@ document.addEventListener('DOMContentLoaded', () => {
             modalSlot.innerHTML = ''; 
             modalSlot.appendChild(actieveWitteBox);
 
-            aangepasteElementen = [];
-            const vasteHoogtes = ['h-48', 'h-56', 'h-64', 'h-96', 'h-auto', 'min-h-[12rem]'];
-            
-            // Maak hoofdbox vloeiend en voorkom dat heatmaps over het blauwe vak gaan
-            let actieveClasses = Array.from(actieveWitteBox.classList);
-            let teVerwijderen = actieveClasses.filter(c => vasteHoogtes.includes(c) || c.startsWith('h-'));
-            
-            if (teVerwijderen.length > 0) {
-                aangepasteElementen.push({ el: actieveWitteBox, classes: teVerwijderen });
-                actieveWitteBox.classList.remove(...teVerwijderen);
-            }
-            actieveWitteBox.classList.add('flex-grow', 'h-full', 'w-full', 'flex', 'flex-col', 'overflow-hidden');
+            // Voeg de tijdelijke forceer-classes toe aan de hoofdbox
+            actieveWitteBox.classList.add(...modalClasses);
 
             // Zoek interne divs en forceer ze om de nieuwe ruimte te gebruiken
             const innerDivs = actieveWitteBox.querySelectorAll('div');
             innerDivs.forEach(div => {
-                let divClasses = Array.from(div.classList);
-                let divTeVerwijderen = divClasses.filter(c => vasteHoogtes.includes(c));
-                
-                if (divTeVerwijderen.length > 0 || div.querySelector('canvas') || div.id.includes('Network') || div.id.includes('Chart')) {
-                    if (divTeVerwijderen.length > 0) {
-                        aangepasteElementen.push({ el: div, classes: divTeVerwijderen });
-                        div.classList.remove(...divTeVerwijderen);
-                    } else {
-                        aangepasteElementen.push({ el: div, classes: [] });
-                    }
-                    // Zorg dat de canvas container  groeit zonder scrollbars
-                    div.classList.add('flex-grow', 'min-h-0', 'h-full', 'w-full', 'relative', 'overflow-hidden');
+                if (div.querySelector('canvas') || div.id.includes('Network') || div.id.includes('Chart')) {
+                    div.classList.add(...modalClasses);
                 }
             });
 
@@ -390,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalContent.innerText = description;
             modal.classList.remove('hidden');
 
-            // een vertraging .
+            // Een vertraging
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
                 
@@ -405,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     populatieNetwork.redraw();
                     populatieNetwork.fit();
                 }
-            }, 50); 
+            }, 150); 
         });
     });
 
@@ -413,28 +395,37 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('hidden');
         
         if (actieveWitteBox && grafiekPlaceholder) {
-            // Verwijder toegevoegde schaal-classes
-            actieveWitteBox.classList.remove('flex-grow', 'h-full', 'w-full', 'flex', 'flex-col', 'overflow-hidden');
             
-            aangepasteElementen.forEach(item => {
-                item.el.classList.remove('flex-grow', 'min-h-0', 'h-full', 'w-full', 'relative', 'overflow-hidden');
-                if (item.classes.length > 0) {
-                    item.el.classList.add(...item.classes);
-                }
+            // Verwijder alleen de tijdelijke '!' classes.
+            actieveWitteBox.classList.remove(...modalClasses);
+            
+            const innerDivs = actieveWitteBox.querySelectorAll('div');
+            innerDivs.forEach(div => {
+                div.classList.remove(...modalClasses);
             });
 
             grafiekPlaceholder.replaceWith(actieveWitteBox);
             
             actieveWitteBox = null;
             grafiekPlaceholder = null;
-            aangepasteElementen = [];
             
-            // Ook bij het terugzetten even een signaaltje sturen zodat ze weer netjes in de kleine box passen
+            // Ook bij het terugzetten een signaalt sturen zodat ze in de kleine box passen
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
-                if (typeof individualNetwork !== 'undefined' && individualNetwork) individualNetwork.fit();
-                if (typeof populatieNetwork !== 'undefined' && populatieNetwork) populatieNetwork.fit();
-            }, 50);
+                
+                //Check of de container op dit moment zichtbaar is (!== null) voordat hij fit()
+                const indivContainer = document.getElementById('graphProjectionNetwork');
+                if (indivContainer && indivContainer.offsetParent !== null && typeof individualNetwork !== 'undefined' && individualNetwork) {
+                    individualNetwork.redraw();
+                    individualNetwork.fit();
+                }
+
+                const popContainer = document.getElementById('populatieGraphNetwork');
+                if (popContainer && popContainer.offsetParent !== null && typeof populatieNetwork !== 'undefined' && populatieNetwork) {
+                    populatieNetwork.redraw();
+                    populatieNetwork.fit();
+                }
+            }, 150);
         }
     }
 
@@ -719,6 +710,28 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(link);
         });
     }
+
+    // ==========================================================================
+    // Hertekenen van figuren wanneer je switcht tussen de individuele en alle 
+    // patiënten view, zodat ze netjes schalen in hun nieuwe container.
+    // ==========================================================================
+    document.getElementById('nav-patient').addEventListener('click', () => {
+        setTimeout(() => {
+            if (typeof individualNetwork !== 'undefined' && individualNetwork) {
+                individualNetwork.redraw();
+                individualNetwork.fit();
+            }
+        }, 50);
+    });
+
+    document.getElementById('nav-all-patients').addEventListener('click', () => {
+        setTimeout(() => {
+            if (typeof populatieNetwork !== 'undefined' && populatieNetwork) {
+                populatieNetwork.redraw();
+                populatieNetwork.fit();
+            }
+        }, 50);
+    });
 
 // EINDE DOMContentLoaded
 });
