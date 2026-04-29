@@ -35,13 +35,13 @@
                 Single Patient
             </a>
             <a href="#" id="nav-all-patients" class="nav-link text-xl font-bold text-white bg-blue-700 py-2 px-8 rounded-full shadow-lg">
-                Population Overview
+                All Patients
             </a>
         </header>
-
+        <!-- Begin individuele pagina DIV -->
         <div id="individuele-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
             <div class="flex justify-between items-center mb-8 bg-blue-900 p-4 rounded-lg shadow">
-                
+                <!-- Begin search bar en download CSV div-->
                 <div class="flex items-center space-x-4 relative"> 
                     <div class="relative w-64">
                         <input type="text" id="DePatiënt" autocomplete="off" placeholder="Enter patient ID..." 
@@ -64,11 +64,12 @@
             </div>
 
             <div class="grid grid-cols-3 gap-8">
+            <!-- Begin progression & features div -->
             <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Feature Comparison"
-                            data-description="Compare the disease stage with clinical values over time.">
+                            data-title="Progression & Features"
+                            data-description="Compare the patient's clinical values (like TJC, SJC, ESR) and/or their predicted disease stages over time.">
                         i
                     </button>
 
@@ -126,11 +127,12 @@
 
                     </div>
                 </div>
+                <!-- Begin confidence & prediction div -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Model Confidence"
-                            data-description="View the prediction certainty per visit. Choose between Disease Stage (L1-L8) or Trajectory (TR1-TR4).">
+                            data-description="Shows how certain the model is about its prediction for the disease stage or trajectory at each visit.">
                         i
                     </button>
 
@@ -172,10 +174,11 @@
                         </div>
                     </div>
                 </div>
+                <!-- Graph Projection vs Reference -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Graph Projection vs Reference"
-                            data-description="This chart shows the patient's disease stage history plotted against the most common pathways in the reference population.">
+                            data-description="Shows the patient's actual disease stages over time compared to the standard pathway for their assigned trajectory. Larger circles mean more patients in that stage; thicker lines mean a more common transition. The grey line is the reference, the blue/red line is the selected patient's actual progression. The red line is a new route made by the patiënt and the blue line is a route matching the reference.">
                         i
                     </button>
                     
@@ -183,7 +186,7 @@
 
                     <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
                         
-                        <div class="flex justify-between items-center mb-2 z-10">
+                        <div class="flex justify-between items-center mb-2 z-10 flex-shrink-0">
                             <h3 class="text-md font-bold text-gray-800">Pathway vs Reference</h3>
                             <select id="select-graph-ref" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
                                 <option value="TR1">Reference TR1</option>
@@ -193,14 +196,16 @@
                             </select>
                         </div>
 
-                        <div id="graphProjectionNetwork" class="flex-grow w-full min-h-0 relative"></div>
+                        <div class="flex-1 w-full relative min-h-0 overflow-hidden">
+                            <div id="graphProjectionNetwork" class="absolute inset-0 w-full h-full outline-none"></div>
+                        </div>
                     </div>
                 </div>
-
+                <!-- begin disease stage heatmap div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Deviation from Disease Stage Reference"
-                            data-description="Red = Value is higher than average for this stage. Blue = Lower.">
+                            data-title="Deviation vs Disease Stage Reference"
+                            data-description="Shows how much the patient's values differ from the average expected values for their disease stage (Red = higher, Blue = lower).">
                         i
                     </button>
                     
@@ -209,11 +214,11 @@
                         <div id="heatmapChart" class="flex-grow w-full min-h-0"></div>
                     </div>
                 </div>
-
+                <!-- begin trajectory heatmap div -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Deviation from Trajectory Baseline"
-                            data-description="Here you see the deviation compared to the baseline of the predicted trajectory.">
+                            data-title="Deviation from Trajectory Baseline reference"
+                            data-description="Shows how much the patient's values differ from the expected baseline values for their predicted trajectory.">
                         i
                     </button>
 
@@ -222,11 +227,11 @@
                         <div id="trajectHeatmapChart" class="flex-grow w-full min-h-0"></div>
                     </div>
                 </div>
-
+                <!-- begin similar patients div -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Similar Patients"
-                            data-description="These are patients from the database exhibiting the same pattern. In the KNN model, these are the nearest neighbors. In the Baseline, these are reference patients for the predicted trajectory.">
+                            data-title="Similar Patients legend"
+                            data-description="Lists the top 5 most similar patients from the database based on the pattern recognition (K-Nearest Neighbors).">
                         i
                     </button>
                     
@@ -246,10 +251,11 @@
                         <p id="geenBurenMelding" class="hidden text-center p-6 text-gray-500 italic"></p>
                     </div>
                 </div>
+                <!-- begin legenda disease stages / trajectories div -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Legend & Explanation"
-                            data-description="Here you can find the definitions of the different disease stages (L1-L8) and trajectories (TR1-TR4).">
+                            data-title="discovered disease stages & trajectories legend"
+                            data-description="A quick overview of the characteristics of the discovered disease stages (L1-L8) and trajectories (TR1-TR4).">
                         i
                     </button>
                     
@@ -273,10 +279,11 @@
 
                     </div>
                 </div>
+                <!-- Feature Impact Breakdown div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative col-span-3">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Model Impact & Explainability"
-                            data-description="This table shows how much each clinical feature contributed to the AI's prediction. Red means it pushed the prediction higher/towards the outcome. Blue means it lowered the prediction. Darker colors mean stronger impact.">
+                            data-title="Feature Impact Breakdown (Explainable AI Table)"
+                            data-description="Shows how much each clinical feature influenced the model's prediction. Red made it less likely to be the best pick, blue made it more likely.">
                         i
                     </button>
                     
@@ -293,7 +300,7 @@
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto flex-1 flex flex-col justify-center min-h-0 w-full h-full">
                             <table class="min-w-full text-sm text-center border-collapse">
                                 <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                                     <tr>
@@ -317,9 +324,9 @@
             
                 </div>
             </div>
-
+            <!-- Begin ALle pagina DIV-->
             <div id="alle-patienten-view" class="w-full p-6 rounded-lg shadow-xl text-white hidden">
-
+            <!-- Begin download CSV div-->
             <div class="flex justify-between items-center mb-6 bg-blue-900 p-4 rounded-lg shadow">
                 <div>
                     <h2 class="text-2xl font-bold text-white">Population Overview</h2>
@@ -333,37 +340,39 @@
                 </button>
             </div>
             <div class="grid grid-cols-3 gap-8">
-        
+                <!-- population graph div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
-                <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                        data-title="Population Graph Projection"
-                        data-description="Visualizes the actual pathways (disease stages over time) of the loaded patients. Larger nodes indicate more patients in that stage. Thicker lines indicate a more frequent transition between stages.">
-                    i
-                </button>
-                
-                <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
-                    <div class="flex justify-between items-center mb-2 z-10">
-                        <h3 class="text-md font-bold text-gray-800">Population Pathways</h3>
-                        <div class="flex space-x-2">
-                            <label class="text-xs text-gray-500 font-bold self-center">Filter by Trajectory:</label>
-                            <select id="select-pop-graph-filter" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
-                                <option value="ALL">Show All Patients</option>
-                                <option value="TR1">TR1 Patients Only</option>
-                                <option value="TR2">TR2 Patients Only</option>
-                                <option value="TR3">TR3 Patients Only</option>
-                                <option value="TR4">TR4 Patients Only</option>
-                            </select>
+                    <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                            data-title="Population Graph Projection"
+                            data-description="Shows the actual disease pathways of all patients or filtered by trajectory. Larger circles mean more patients in that stage; thicker lines mean a more common transition.">
+                        i
+                    </button>
+                    
+                    <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
+                        <div class="flex justify-between items-center mb-2 z-10 flex-shrink-0">
+                            <h3 class="text-md font-bold text-gray-800">Population Pathways</h3>
+                            <div class="flex space-x-2">
+                                <label class="text-xs text-gray-500 font-bold self-center">Filter by Trajectory:</label>
+                                <select id="select-pop-graph-filter" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    <option value="ALL">Show All Patients</option>
+                                    <option value="TR1">TR1 Patients Only</option>
+                                    <option value="TR2">TR2 Patients Only</option>
+                                    <option value="TR3">TR3 Patients Only</option>
+                                    <option value="TR4">TR4 Patients Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 w-full relative min-h-0 overflow-hidden">
+                            <div id="populatieGraphNetwork" class="absolute inset-0 w-full h-full outline-none"></div>
                         </div>
                     </div>
-                    
-                    <div id="populatieGraphNetwork" class="flex-grow w-full min-h-0 relative"></div>
                 </div>
-            </div>
-
+                <!-- begin population stages heatmap div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20 flex-shrink-0"
                     data-title="Stages vs Reference"
-                    data-description="Shows the deviation of our patients compared to the expected reference values. Red is higher, blue is lower.">
+                    data-description="Shows how the average values of the uploaded patients divided by disease stage, differ from the standard reference values for each disease stage."">
                         i
                     </button>
                     
@@ -374,45 +383,39 @@
                         <div id="populatieStadiaHeatmapChart" class="w-full h-full"></div>
                     </div>
                 </div>
-
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                    data-title="Trajectory vs Baseline"
-                    data-description="Deviation of the population compared to the predicted trajectory baseline.">
+                <!-- begin population trajectory heatmap div-->
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20"
+                            data-title="Trajectory vs Baseline"
+                            data-description="Shows how the average values of the uploaded patients divided by trajectory, differ from the standard baseline values for each trajectory.">
                         i
                     </button>
-                    <div class="bg-white text-black rounded h-96 flex items-center justify-center">
-                        <div id="populatieTrajectHeatmapChart"></div>
+                    
+                    <div class="bg-white text-black rounded p-2 h-96 flex flex-col items-center justify-center white-box transition-all duration-300 w-full relative">
+                        <div id="populatieTrajectHeatmapChart" class="w-full h-full min-h-0"></div>
                     </div>
                 </div>
+                <!--Begin PCA div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Spread of New Patients (PCA)"
-                            data-description="Each point is a patient from your uploaded file. Colors indicate the predicted trajectory. Good clustering means the model performs well.">
+                            data-description="Each point is a patient from your uploaded file. Colors indicate the predicted trajectory.">
                         i
                     </button>
                     <div class="bg-white text-black rounded p-2 h-64">
                         <canvas id="PopulatieScatter"></canvas>
                     </div>
                 </div>
+                <!-- Begin PCA Population vs Reference div -->
+                <!-- MOET NOG GEMAAKT WORDEN DUS-->
 
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20"
-                            data-title="PCA Population vs Reference"
-                            data-description="This plot shows the spread of patients (dots) around the 4 fixed reference centers (diamonds). This immediately shows if new data aligns with expectations.">
-                        i
-                    </button>
-                    <div class="extra-info hidden mt-2 mb-4 p-4 bg-blue-900 rounded-lg border border-blue-700 flex-shrink-0"></div>
 
-                    <div class="bg-white text-black rounded p-2 h-96 flex flex-col items-center justify-center white-box transition-all w-full relative">
-                        <canvas id="PopulatieScatterReferentie" class="w-full h-full"></canvas>
-                    </div>
-                </div>
+                <!-- trajectory trend comparison div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Trajectory Trend Comparison"
-                            data-description="Compare all 4 trajectories simultaneously. Blue lines correspond to the left axis, red lines to the right axis. Line style indicates the trajectory.">
+                            data-description="Compares the average trends of specific clinical values across all four trajectories over time. You can select which feature to compare on the left (blue) and right (red) graphs.">
                         i
                     </button>
 
@@ -456,11 +459,11 @@
 
                     </div>
                 </div>
-                
+                <!-- begin disease stages / trajectory legend div -->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Population Legend"
-                            data-description="Here you will find the definitions of all different disease stages and trajectories found in your uploaded population.">
+                            data-description="Overview of the definitions of the discovered disease stages and trajectories found in this uploaded population.">
                         i
                     </button>
                     
@@ -489,7 +492,7 @@
                         
             </div>
         </div>
-
+        <!-- begin Modal (pop up bij de I knop) Div -->
         <div id="info-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-6 hidden z-[100]">
             <div class="bg-blue-800 w-full max-w-[90vw] h-[90vh] rounded-2xl shadow-2xl p-8 relative flex flex-col">
                 
@@ -509,6 +512,7 @@
         </div>
 
     </div>
+    <!-- Scripts (dit zijn een soort plugins die nodig zijn voor bepaalde functionaliteiten + roept de andere files aan)-->
     <script src="referentiewaardes.js"></script>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

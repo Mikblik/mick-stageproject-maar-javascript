@@ -195,7 +195,8 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
             }]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
+            responsive: true,
+            maintainAspectRatio: false,
             scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Confidence (%)' } } },
             plugins: {
                 legend: { display: true }, 
@@ -268,7 +269,7 @@ function maakApexHeatmap(patientenLijst) {
 
     const options = {
         series: alleSeries.reverse(), 
-        chart: { height: 350, type: 'heatmap', toolbar: { show: false } },
+        chart: { height: "100%", type: 'heatmap', toolbar: { show: false } },
         plotOptions: {
             heatmap: {
                 shadeIntensity: 0.5, radius: 2,
@@ -369,16 +370,16 @@ function maakTrajectHeatmap(patientenLijst) {
 
     const options = {
         series: alleSeries.reverse(), 
-        chart: { height: 350, type: 'heatmap', toolbar: { show: false } },
+        chart: { height: "100%", type: 'heatmap', toolbar: { show: false } },
         plotOptions: {
             heatmap: {
                 shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero' }, 
-                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower than baseline' }, 
-                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'At baseline' },     
-                        { from: 1.06, to: 100, color: '#EF4444', name: 'Higher than baseline' } 
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero / Very Low' }, 
+                        { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower' }, 
+                        { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'normal' },     
+                        { from: 1.06, to: 100, color: '#EF4444', name: 'Higher' } 
                     ]
                 }
             }
@@ -559,6 +560,10 @@ function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
     };
 
     individualNetwork = new vis.Network(container, data, options);
+
+    individualNetwork.once("afterDrawing", function() {
+        individualNetwork.fit();
+    });
 }
 
 // ==========================================================================
@@ -906,7 +911,8 @@ function maakTrajectTrendGrafiek(gemiddeldeData, feature1, feature2) {
         type: 'line',
         data: { labels: labels, datasets: alleDatasets },
         options: {
-            responsive: true, maintainAspectRatio: false,
+            responsive: true,
+            maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 title: { display: true, text: `Trajectory Comparison: ${feature1} (Left) vs ${feature2} (Right)` },
@@ -1258,13 +1264,13 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
 
     const options = {
         series: alleSeries.reverse(), 
-        chart: { height: 300, type: 'heatmap', toolbar: { show: false } },
+        chart: { height: "100%", type: 'heatmap', toolbar: { show: false } },
         plotOptions: {
             heatmap: {
                 shadeIntensity: 0.5, radius: 2,
                 colorScale: {
                     ranges: [
-                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero' }, 
+                        { from: 0, to: 0.01, color: '#EFF6FF', name: 'Zero / Very Low' }, 
                         { from: 0.02, to: 0.95, color: '#3B82F6', name: 'Lower' }, 
                         { from: 0.96, to: 1.05, color: '#D1D5DB', name: 'Normal' },    
                         { from: 1.06, to: 100, color: '#EF4444', name: 'Higher' } 
@@ -1273,6 +1279,7 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
             }
         },
         dataLabels: { enabled: true, style: { colors: ['#000'] } },
+        title: { text: `Population: Average per trajectory vs Reference` },
         xaxis: { position: 'bottom', tooltip: { enabled: false } },
         tooltip: {
             custom: function({series, seriesIndex, dataPointIndex, w}) {
@@ -1359,170 +1366,6 @@ function vulPopulatieLegenda(patientLijst) {
     }
 }
 
-
-// ==========================================================================
-// 4e. POPULATION SCATTER (PCA): PATIENTS VS REFERENCE DUMMIES
-// Computes a PCA including predefined reference patients (diamonds)
-// so the user can visually assess cluster quality of new data.
-// ==========================================================================
-
-let mijnPopulatieScatterRef = null;
-
-function maakPopulatieScatterReferentie(patientenLijst) {
-    const ctx = document.getElementById('PopulatieScatterReferentie');
-    if (!ctx) return;
-
-    if (mijnPopulatieScatterRef) mijnPopulatieScatterRef.destroy();
-
-    const features = ['TJC', 'SJC', 'ESR', 'Leukocytes', 'HB', 'Thrombocytes'];
-    const dataMatrix = [];
-    const patientInfos = []; 
-
-    // DATA COLLECTION: Real Patients
-    patientenLijst.forEach(p => {
-        if (!p.ziektetraject || p.ziektetraject.startsWith("Onbekend")) return;
-
-        let mistData = false;
-        const rij = [];
-
-        for (const f of features) {
-            if (p[f] === null || p[f] === undefined || p[f] === "") {
-                mistData = true; break; 
-            }
-            rij.push(Number(p[f]));
-        }
-
-        if (!mistData) {
-            dataMatrix.push(rij);
-            patientInfos.push({ 
-                id: p.patient_id, 
-                visit: p.visit, 
-                traject: p.ziektetraject,
-                isReferentie: false 
-            });
-        }
-    });
-
-    // DATA COLLECTION: Reference Patients (Dummies added to the same matrix)
-    if (typeof REF_TRAJECT_POPULATIE !== 'undefined') {
-        const trajectNamen = ['TR1', 'TR2', 'TR3', 'TR4'];
-        
-        trajectNamen.forEach(tr => {
-            if (REF_TRAJECT_POPULATIE[tr]) {
-                REF_TRAJECT_POPULATIE[tr].forEach((refPatient, index) => {
-                    const rij = [];
-                    for (const f of features) {
-                        rij.push(Number(refPatient[f] || 0));
-                    }
-                    dataMatrix.push(rij);
-                    patientInfos.push({
-                        id: `Dummy ${index + 1}`,
-                        visit: '-',
-                        traject: tr,
-                        isReferentie: true 
-                    });
-                });
-            }
-        });
-    }
-
-    if (dataMatrix.length < 6) {
-        schrijfMeldingInCanvas('PopulatieScatterReferentie', `Not enough data for PCA.`);
-        return; 
-    }
-
-    try {
-        const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
-        const dataVoorPCA = transpose(dataMatrix); 
-
-        const genormaliseerdeData = dataVoorPCA.map(featureRij => {
-            const n = featureRij.length;
-            const mean = featureRij.reduce((sum, val) => sum + val, 0) / n;
-            const variantie = featureRij.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n;
-            const stdDev = Math.sqrt(variantie);
-
-            return featureRij.map(val => {
-                if (stdDev === 0) return 0; 
-                return (val - mean) / stdDev;
-            });
-        });
-
-        const pcaKlaarData = transpose(genormaliseerdeData); 
-        const vectors = PCA.getEigenVectors(pcaKlaarData);
-        
-        if (!vectors || vectors.length < 2) {
-            schrijfMeldingInCanvas('PopulatieScatterReferentie', "Data lacks sufficient variance for PCA.");
-            return;
-        }
-
-        const adData = PCA.computeAdjustedData(pcaKlaarData, vectors[0], vectors[1]);
-
-        const datasets = {
-            'Ref TR1': { label: 'Reference TR1', data: [], backgroundColor: '#064E3B', pointStyle: 'rectRot', radius: 6 },
-            'Ref TR2': { label: 'Reference TR2', data: [], backgroundColor: '#78350F', pointStyle: 'rectRot', radius: 6 },
-            'Ref TR3': { label: 'Reference TR3', data: [], backgroundColor: '#7F1D1D', pointStyle: 'rectRot', radius: 6 },
-            'Ref TR4': { label: 'Reference TR4', data: [], backgroundColor: '#4C1D95', pointStyle: 'rectRot', radius: 6 },
-            
-            'Pat TR1': { label: 'Own Data TR1', data: [], backgroundColor: '#34D399', pointStyle: 'circle', radius: 4 },
-            'Pat TR2': { label: 'Own Data TR2', data: [], backgroundColor: '#FBBF24', pointStyle: 'circle', radius: 4 },
-            'Pat TR3': { label: 'Own Data TR3', data: [], backgroundColor: '#F87171', pointStyle: 'circle', radius: 4 },
-            'Pat TR4': { label: 'Own Data TR4', data: [], backgroundColor: '#A78BFA', pointStyle: 'circle', radius: 4 }
-        };
-
-        for (let i = 0; i < patientInfos.length; i++) {
-            const x = adData.adjustedData[0][i];
-            const y = adData.adjustedData[1][i];
-            const info = patientInfos[i];
-            
-            const sleutel = info.isReferentie ? `Ref ${info.traject}` : `Pat ${info.traject}`;
-            
-            if (datasets[sleutel]) {
-                datasets[sleutel].data.push({ 
-                    x: x, 
-                    y: y, 
-                    patientId: info.id,
-                    visitNummer: info.visit,
-                    isReferentie: info.isReferentie
-                });
-            }
-        }
-
-        const actieveDatasets = Object.values(datasets).filter(ds => ds.data.length > 0);
-
-        mijnPopulatieScatterRef = new Chart(ctx, {
-            type: 'scatter',
-            data: { datasets: actieveDatasets },
-            options: {
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    title: { display: true, text: 'PCA Clustering: Patients vs Reference' },
-                    legend: { position: 'top', labels: { usePointStyle: true } },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => {
-                                const raw = context.raw;
-                                if (raw.isReferentie) {
-                                    return `Reference ${context.dataset.label.split(' ')[1]}: ${raw.patientId}`;
-                                }
-                                return `Patient: ${raw.patientId} (Visit ${raw.visitNummer})`;
-                            },
-                            afterLabel: (context) => `(PC1: ${context.parsed.x.toFixed(2)}, PC2: ${context.parsed.y.toFixed(2)})`
-                        }
-                    }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Principal Component 1' } },
-                    y: { title: { display: true, text: 'Principal Component 2' } }
-                }
-            }
-        });
-        
-    } catch (e) {
-        console.error("PCA Error:", e);
-        schrijfMeldingInCanvas('PopulatieScatterReferentie', "Unable to calculate PCA.");
-    }
-}
 
 // ==========================================================================
 // 4f. alle patiënt GRAPH PROJECTION

@@ -445,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
         maakPopulatieStadiaHeatmap(patientenLijst);
         maakPopulatieTrajectHeatmap(patientenLijst);
         vulPopulatieLegenda(patientenLijst);
-        maakPopulatieScatterReferentie(patientenLijst)
         maakPopulatieGraphProjection(patientenLijst, 'ALL');
     }
 
