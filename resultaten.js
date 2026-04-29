@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('info-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalContent = document.getElementById('modal-content');
-    const closeButton = document.getElementById('modal-close-button');
     const allInfoButtons = document.querySelectorAll('.info-button');
+    const modalCloseButton = document.getElementById('modal-close-button');
 
     
     // ========================================================================
@@ -331,46 +331,81 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let actieveWitteBox = null;
     let grafiekPlaceholder = null;
-    let origineleHoogteClass = '';
+    let aangepasteElementen = []; 
 
     allInfoButtons.forEach(button => {
         button.addEventListener('click', () => {
             const title = button.dataset.title;
             const description = button.dataset.description;
             
-            // Zoek het originele blauwe blok en pak de witte inhoud (de grafiek)
             const card = button.closest('.bg-blue-800');
             actieveWitteBox = card.querySelector('.bg-white');
             
-            if (!actieveWitteBox) return; // Als er niks is, doe niks
+            if (!actieveWitteBox) return;
 
-            // Sla op hoe hoog het blokje was
-            const match = actieveWitteBox.className.match(/h-\w+|h-\[\d+%\]/);
-            origineleHoogteClass = match ? match[0] : 'h-96';
-
-            // Maak een "Gereserveerd" blokje aan zodat je pagina-layout niet inzakt!
+            // Placeholder
             grafiekPlaceholder = document.createElement('div');
             grafiekPlaceholder.className = actieveWitteBox.className; 
-            grafiekPlaceholder.innerHTML = '<div class="flex h-full w-full items-center justify-center text-blue-300 font-bold italic">Chart opened in pop-up...</div>';
+            grafiekPlaceholder.innerHTML = '<div class="flex h-full w-full items-center justify-center text-blue-300 font-bold italic border-2 border-dashed border-blue-500 rounded-lg bg-blue-800 bg-opacity-50">Chart opened in pop-up...</div>';
             
-            // Wissel de echte grafiek om met de placeholder
             actieveWitteBox.replaceWith(grafiekPlaceholder);
 
-            // Zet de echte grafiek in de pop-up
+            // Zet in modal
             const modalSlot = document.getElementById('modal-chart-slot');
             modalSlot.innerHTML = ''; 
             modalSlot.appendChild(actieveWitteBox);
 
-            // Maak de grafiek groot
-            actieveWitteBox.classList.remove('h-48', 'h-56', 'h-64', 'h-96', 'h-auto', 'min-h-[12rem]');
-            actieveWitteBox.classList.add('h-full', 'w-full', 'flex-grow');
+            aangepasteElementen = [];
+            const vasteHoogtes = ['h-48', 'h-56', 'h-64', 'h-96', 'h-auto', 'min-h-[12rem]'];
+            
+            // Maak hoofdbox vloeiend en voorkom dat heatmaps over het blauwe vak gaan
+            let actieveClasses = Array.from(actieveWitteBox.classList);
+            let teVerwijderen = actieveClasses.filter(c => vasteHoogtes.includes(c) || c.startsWith('h-'));
+            
+            if (teVerwijderen.length > 0) {
+                aangepasteElementen.push({ el: actieveWitteBox, classes: teVerwijderen });
+                actieveWitteBox.classList.remove(...teVerwijderen);
+            }
+            actieveWitteBox.classList.add('flex-grow', 'h-full', 'w-full', 'flex', 'flex-col', 'overflow-hidden');
 
-            // Vul tekst in en open de modal
+            // Zoek interne divs en forceer ze om de nieuwe ruimte te gebruiken
+            const innerDivs = actieveWitteBox.querySelectorAll('div');
+            innerDivs.forEach(div => {
+                let divClasses = Array.from(div.classList);
+                let divTeVerwijderen = divClasses.filter(c => vasteHoogtes.includes(c));
+                
+                if (divTeVerwijderen.length > 0 || div.querySelector('canvas') || div.id.includes('Network') || div.id.includes('Chart')) {
+                    if (divTeVerwijderen.length > 0) {
+                        aangepasteElementen.push({ el: div, classes: divTeVerwijderen });
+                        div.classList.remove(...divTeVerwijderen);
+                    } else {
+                        aangepasteElementen.push({ el: div, classes: [] });
+                    }
+                    // Zorg dat de canvas container  groeit zonder scrollbars
+                    div.classList.add('flex-grow', 'min-h-0', 'h-full', 'w-full', 'relative', 'overflow-hidden');
+                }
+            });
+
             modalTitle.innerText = title;
             modalContent.innerText = description;
             modal.classList.remove('hidden');
 
-            setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+            // een vertraging .
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                
+                // Als het individuele netwerk in deze box zit, forceer een redraw
+                if (actieveWitteBox.querySelector('#graphProjectionNetwork') && typeof individualNetwork !== 'undefined' && individualNetwork !== null) {
+                    individualNetwork.redraw();
+                    individualNetwork.fit(); 
+                }
+                
+                // Als het populatie netwerk in deze box zit, forceer een redraw
+                if (actieveWitteBox.querySelector('#populatieGraphNetwork') && typeof populatieNetwork !== 'undefined' && populatieNetwork !== null) {
+                    populatieNetwork.redraw();
+                    populatieNetwork.fit();
+                }
+            }, 50); 
         });
     });
 
@@ -378,32 +413,42 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('hidden');
         
         if (actieveWitteBox && grafiekPlaceholder) {
-            // Haal de pop-up grootte weg
-            actieveWitteBox.classList.remove('h-full', 'w-full', 'flex-grow');
-            // Geef de originele grootte weer terug
-            actieveWitteBox.classList.add(origineleHoogteClass);
+            // Verwijder toegevoegde schaal-classes
+            actieveWitteBox.classList.remove('flex-grow', 'h-full', 'w-full', 'flex', 'flex-col', 'overflow-hidden');
             
-            // Zet de grafiek weer terug op je dashboard (vervangt de placeholder)
+            aangepasteElementen.forEach(item => {
+                item.el.classList.remove('flex-grow', 'min-h-0', 'h-full', 'w-full', 'relative', 'overflow-hidden');
+                if (item.classes.length > 0) {
+                    item.el.classList.add(...item.classes);
+                }
+            });
+
             grafiekPlaceholder.replaceWith(actieveWitteBox);
             
-            // Leegmaken
             actieveWitteBox = null;
             grafiekPlaceholder = null;
+            aangepasteElementen = [];
             
-            // Vertel grafieken weer te krimpen
-            setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+            // Ook bij het terugzetten even een signaaltje sturen zodat ze weer netjes in de kleine box passen
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                if (typeof individualNetwork !== 'undefined' && individualNetwork) individualNetwork.fit();
+                if (typeof populatieNetwork !== 'undefined' && populatieNetwork) populatieNetwork.fit();
+            }, 50);
         }
     }
 
-    closeButton.addEventListener('click', closeModal);
+    if (modalCloseButton) {
+        modalCloseButton.addEventListener('click', closeModal);
+    }
 
-    // Om modal te sluiten als je buiten het inhoudsgedeelte klikt (de zwarte rand)
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
-    
+    if (modal) {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    }
 
     // ========================================================================
     // 9. ALLE PATIËNTEN FIGUREN (AANSTURING)
