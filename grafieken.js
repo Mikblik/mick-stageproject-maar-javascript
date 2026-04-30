@@ -554,6 +554,13 @@ function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
 
     const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
     const options = {
+        edges: {
+            smooth: {
+                enabled: true,
+                type: 'curvedCW',
+                roundness: 0.8 
+            }
+        },
         layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
         interaction: { dragNodes: true, dragView: true, zoomView: true },
         physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
@@ -1507,6 +1514,13 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
     // figuur Tekenen
     const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
     const options = {
+        edges: {
+            smooth: {
+                enabled: true,
+                type: 'curvedCW',
+                roundness: 0.8 
+            }
+        },
         layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
         interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true },
         physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
