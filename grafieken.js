@@ -989,7 +989,7 @@ function maakPopulatieScatter(patientenLijst) {
 
     try {
         const transpose = m => m[0].map((x,i) => m.map(x => x[i]));
-        const dataVoorPCA = transpose(dataMatrix); // Now 6 rows, N columns
+        const dataVoorPCA = transpose(dataMatrix); 
 
         const genormaliseerdeData = dataVoorPCA.map(featureRij => {
             const n = featureRij.length;
@@ -1013,7 +1013,19 @@ function maakPopulatieScatter(patientenLijst) {
         }
 
         const adData = PCA.computeAdjustedData(pcaKlaarData, vectors[0], vectors[1]);
-    
+        
+        // explained variance berekenen 
+        function berekenVariantie(array) {
+            const mean = array.reduce((a, b) => a + b, 0) / array.length;
+            return array.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / array.length;
+        }
+
+        const pc1Variantie = berekenVariantie(adData.adjustedData[0]);
+        const pc2Variantie = berekenVariantie(adData.adjustedData[1]);
+        const totaleVariantie = features.length;
+
+        const pc1Percentage = ((pc1Variantie / totaleVariantie) * 100).toFixed(1);
+        const pc2Percentage = ((pc2Variantie / totaleVariantie) * 100).toFixed(1);
 
         const datasets = {
             'TR1': { label: 'TR1', data: [], backgroundColor: 'green' },
@@ -1060,8 +1072,8 @@ function maakPopulatieScatter(patientenLijst) {
                     }
                 },
                 scales: {
-                    x: { title: { display: true, text: 'Principal Component 1' } },
-                    y: { title: { display: true, text: 'Principal Component 2' } }
+                    x: { title: { display: true, text: `Principal Component 1 (${pc1Percentage}%)`, font: { weight: 'bold' } } },
+                    y: { title: { display: true, text: `Principal Component 2 (${pc2Percentage}%)`, font: { weight: 'bold' } } }
                 }
             }
         });
