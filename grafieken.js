@@ -8,6 +8,28 @@
  * ============================================================================
  */
 
+// ========================================================================
+// SVG RECTANGLE ERROR FIX (Voorkomt de ApexCharts negatieve waarden error
+// dat voorkomt bij resizing van heatmaps in flex. Deze functie is alleen bedoeld
+// voor meer overzicht in de console.
+// ========================================================================
+(function() {
+    const originalSetAttribute = Element.prototype.setAttribute;
+
+    Element.prototype.setAttribute = function(name, value) {
+        // Controleer of de library de breedte of hoogte van een rechthoek (rect) wil aanpassen
+        if ((name === 'width' || name === 'height') && this.tagName === 'rect') {
+            // Als het getal onder de 0 duikt (bijv. -0.28), forceer het dan direct naar 0,
+            // dit gebeurd normaal gesproken automatisch, maar geeft wel een error in console
+            if (parseFloat(value) < 0) {
+                value = 0;
+            }
+        }
+        // Voer daarna de normale browser actie uit met de gecorrigeerde waarde
+        return originalSetAttribute.call(this, name, value);
+    };
+})();
+
 // ==========================================================================
 // 1. HELPERS (UI berichten voor missing data bericht)
 // ==========================================================================
@@ -29,8 +51,6 @@ function schrijfMeldingInDiv(divId, tekst) {
     if (!container) return;
     container.innerHTML = `<div class="flex items-center justify-center h-full w-full text-gray-500 text-sm text-center px-4">${tekst}</div>`;
 }
-
-
 
 // ==========================================================================
 // 2. individuele patiënt grafieken

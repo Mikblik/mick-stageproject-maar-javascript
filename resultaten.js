@@ -326,14 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================================
-    // 8. MODAL / POP-UP LOGICA (Inzoomen op grafieken)
+    // 8. MODAL (POP-UP) LOGICA
     // ========================================================================
     
     let actieveWitteBox = null;
     let grafiekPlaceholder = null;
 
-    // Deze '!' classes forceren de modal layout, zonder de originele classes te slopen
-    const modalClasses = ['!h-full', '!w-full', '!flex-1', '!flex', '!flex-col', '!overflow-hidden', '!min-h-0'];
+    const boxClasses = ['!h-full', '!w-full', '!flex-1', '!flex', '!flex-col', '!min-h-0', '!pb-10'];
+    const chartClasses = ['!h-full', '!w-full', '!flex-1', '!min-h-0'];
 
     allInfoButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -358,13 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
             modalSlot.appendChild(actieveWitteBox);
 
             // Voeg de tijdelijke forceer-classes toe aan de hoofdbox
-            actieveWitteBox.classList.add(...modalClasses);
+            actieveWitteBox.classList.add(...boxClasses);
 
             // Zoek interne divs en forceer ze om de nieuwe ruimte te gebruiken
             const innerDivs = actieveWitteBox.querySelectorAll('div');
             innerDivs.forEach(div => {
                 if (div.querySelector('canvas') || div.id.includes('Network') || div.id.includes('Chart')) {
-                    div.classList.add(...modalClasses);
+                    div.classList.add(...chartClasses); // Gebruik hier de chartClasses!
                 }
             });
 
@@ -397,11 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (actieveWitteBox && grafiekPlaceholder) {
             
             // Verwijder alleen de tijdelijke '!' classes.
-            actieveWitteBox.classList.remove(...modalClasses);
+            actieveWitteBox.classList.remove(...boxClasses);
             
             const innerDivs = actieveWitteBox.querySelectorAll('div');
             innerDivs.forEach(div => {
-                div.classList.remove(...modalClasses);
+                div.classList.remove(...chartClasses); // Verwijder hier de chartClasses!
             });
 
             grafiekPlaceholder.replaceWith(actieveWitteBox);
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             actieveWitteBox = null;
             grafiekPlaceholder = null;
             
-            // Ook bij het terugzetten een signaalt sturen zodat ze in de kleine box passen
+            // Ook bij het terugzetten een signaal sturen zodat ze in de kleine box passen
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
                 
