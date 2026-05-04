@@ -8,7 +8,7 @@
  * ============================================================================
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+function initDashboard() {
     
     // Globale variabele om de huidig geselecteerde patiënt in op te slaan
     let gekozenpatientlijst = [];
@@ -733,5 +733,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 50);
     });
 
-// EINDE DOMContentLoaded
+    // ========================================================================
+    // JEST TEST EXPORT
+    // ========================================================================
+    if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        maakApexHeatmap,
+        maakPopulatieStadiaHeatmap,
+        initDashboard
+    };
+}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initDashboard();
 });
