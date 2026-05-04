@@ -15,7 +15,7 @@ eval(modellenCode);
 // ========================================================================
 // 3. ALGORITME TESTS
 // ========================================================================
-describe('Tests voor Modellen, Baselines en de Pipeline', () => {
+describe('algemene Tests voor Modellen, Baselines en de Pipeline die checken of de functie crashed', () => {
 
     test('1. berekenDTWAfstand berekent succesvol de afstand tussen twee reeksen', () => {
         const reeks1 = ["L1", "L2", "L3"];
@@ -58,5 +58,8 @@ describe('Tests voor Modellen, Baselines en de Pipeline', () => {
         combomodel(nepPatiënten);
         expect(true).toBe(true);
     });
+});
+
+describe('', () => {
 
 });

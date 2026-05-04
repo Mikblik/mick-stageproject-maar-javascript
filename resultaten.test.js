@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 // ========================================================================
-// 1. DE VASTE DECORSTUKKEN (Mocks)
+// 1. vaste waarden nodig voor unit tests
 // ========================================================================
 global.fetch = jest.fn(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve("") }));
 global.Papa = { parse: jest.fn() };
@@ -44,7 +44,7 @@ describe('Isolatie Tests voor Alle Grafieken en Tabellen', () => {
         jest.spyOn(document, 'querySelector').mockReturnValue(nepHtmlElement);
     });
 
-    // Onze standaard patiëntenlijst die we in bijna elke test kunnen gebruiken
+    // patiëntenlijst
     const standaardPatientLijst = [{ patient_id: 1, ziektestadium: "L1", traject: "A" }];
 
     // --- 1. maakFlexibeleComboGrafiek ---
@@ -132,5 +132,7 @@ describe('Isolatie Tests voor Alle Grafieken en Tabellen', () => {
         maakPopulatieGraphProjection(standaardPatientLijst, "ALL");
         expect(true).toBe(true);
     });
+
+    
 
 });
