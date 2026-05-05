@@ -117,7 +117,7 @@ describe('Hoofdstuk 2: Deep Tests - Hulpfuncties', () => {
 // 3: testen voor de 3 modellen
 // ========================================================================
 describe('Hoofdstuk 3: Deep Tests - Grote Modellen', () => {
-
+    // DEZE MOET AANGEPAST WORDEN OMDAT NOG NIET DE BASELINE COEFFICIENTEN HEBBEN>! 
     test('baselinemodel (Wiskunde): Berekent en kiest het juiste traject op basis van coëfficiënten', () => {
         const testPatient = { 
             patient_id: 1, visit: 1, 
