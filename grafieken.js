@@ -684,10 +684,10 @@ laadModellenCSV();
 
 // De vaste coëfficiënten van jouw Baseline model (Trajecten)
 const BASELINE_COEFFICIENTS = {
-    "TR1": { TJC: 0.777, SJC: -1.032, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 },
-    "TR2": { TJC: 0.595, SJC: -0.699, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 },
-    "TR3": { TJC: 0.597, SJC: -0.808, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 },
-    "TR4": { TJC: 0.619, SJC: -0.359, ESR: 0, Leukocytes: 0, HB: 0, Thrombocytes: 0 }
+    "TR1": { TJC: 0, SJC: -2.308, ESR: 7.74, Leukocytes: 0.671, HB: 0.432, Thrombocytes: -0.578 },
+    "TR2": { TJC: -0.368, SJC: 0.862, ESR: -1.116, Leukocytes: -4.999, HB: 1.396, Thrombocytes: 0 },
+    "TR3": { TJC: -0.517, SJC: -0.526, ESR: 0, Leukocytes: 6.269, HB: -1.86, Thrombocytes: 2.642 },
+    "TR4": { TJC: 2.348, SJC: 1.988, ESR: -0.983, Leukocytes: -1.809, HB: -0.015, Thrombocytes: -0.464 }
 };
 
 function maakImpactTabel(patientData, typeToon) {

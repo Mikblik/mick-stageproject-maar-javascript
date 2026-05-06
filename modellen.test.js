@@ -121,11 +121,11 @@ describe('Hoofdstuk 3: Deep Tests - Grote Modellen', () => {
     test('baselinemodel (Wiskunde): Berekent en kiest het juiste traject op basis van coëfficiënten', () => {
         const testPatient = { 
             patient_id: 1, visit: 1, 
-            TJC: 10, SJC: 0, ESR: 1, HB: 1, Leukocytes: 1, Thrombocytes: 1 
+            TJC: 10, SJC: 1, ESR: 1, HB: 1, Leukocytes: 1, Thrombocytes: 1 
         };
         baselinemodel([testPatient]);
         expect(testPatient.baseline_excluded).toBe(false);
-        expect(testPatient.ziektetraject).toBe("TR1"); 
+        expect(testPatient.ziektetraject).toBe("TR4"); 
     });
 
     test('baselinemodel (Strenge Controle): Sluit patiënten uit die data missen', () => {
