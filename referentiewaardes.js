@@ -1,37 +1,13 @@
-// Gemiddelde klinische waarden per ziektestadia HB moet aangepast worden!
+// Gemiddelde klinische waarden per ziektestadia
 const REF_GEM_PER_STADIA = {
-    "L1": { 
-        TJC: 0.51, SJC: 0.22, ESR: 5.14, 
-        Leukocytes: 5.08, HB: 0.68, Thrombocytes: 229.84 
-    },
-    "L2": { 
-        TJC: 0.75, SJC: 0.57, ESR: 19.72, 
-        Leukocytes: 5.86, HB: 0.68, Thrombocytes: 289.94 
-    },
-    "L3": { 
-        TJC: 1.92, SJC: 0.65, ESR: 8.40, 
-        Leukocytes: 8.58, HB: 0.69, Thrombocytes: 262.25 
-    },
-    "L4": { 
-        TJC: 3.62, SJC: 3.85, ESR: 11.85, 
-        Leukocytes: 6.07, HB: 0.66, Thrombocytes: 250.64 
-    },
-    "L5": { 
-        TJC: 1.90, SJC: 1.78, ESR: 35.59, 
-        Leukocytes: 7.39, HB: 0.53, Thrombocytes: 325.18 
-    },
-    "L6": { 
-        TJC: 8.32, SJC: 6.90, ESR: 46.57, 
-        Leukocytes: 9.39, HB: 0.50, Thrombocytes: 383.54 
-    },
-    "L7": { 
-        TJC: 15.97, SJC: 8.95, ESR: 22.59, 
-        Leukocytes: 6.98, HB: 0.62, Thrombocytes: 278.63 
-    },
-    "L8": { 
-        TJC: 8.31, SJC: 1.40, ESR: 19.98, 
-        Leukocytes: 6.69, HB: 0.62, Thrombocytes: 303.34 
-    }
+    "L1": { TJC: 0.81, SJC: 0.35, ESR: 8.00, Leukocytes: 6.19, HB: 8.63, Thrombocytes: 244.32 },
+    "L2": { TJC: 1.33, SJC: 0.77, ESR: 34.35, Leukocytes: 7.76, HB: 8.06, Thrombocytes: 288.78 },
+    "L3": { TJC: 1.48, SJC: 0.89, ESR: 13.55, Leukocytes: 11.05, HB: 8.47, Thrombocytes: 307.02 },
+    "L4": { TJC: 5.57, SJC: 2.91, ESR: 10.28, Leukocytes: 7.32, HB: 8.59, Thrombocytes: 261.80 },
+    "L5": { TJC: 4.83, SJC: 4.08, ESR: 35.16, Leukocytes: 8.57, HB: 8.01, Thrombocytes: 315.19 },
+    "L6": { TJC: 4.42, SJC: 4.10, ESR: 80.79, Leukocytes: 9.81, HB: 7.08, Thrombocytes: 390.74 },
+    "L7": { TJC: 11.82, SJC: 10.83, ESR: 32.11, Leukocytes: 8.85, HB: 7.85, Thrombocytes: 319.96 },
+    "L8": { TJC: 3.00, SJC: 2.28, ESR: 19.12, Leukocytes: 3.83, HB: 4.21, Thrombocytes: 267.67 }
 };
 
 // placeholder later veranderen
