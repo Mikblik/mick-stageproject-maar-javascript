@@ -121,10 +121,13 @@ function baselinemodel(patientenLijst) {
         } else {
             // GOEDGEKEURD! Bereken Baseline scores
             const resultaten = {
-                TR1: (Number(patient.TJC) * 0.777) + (Number(patient.SJC) * -1.032),
-                TR2: (Number(patient.TJC) * 0.595) + (Number(patient.SJC) * -0.699),
-                TR3: (Number(patient.TJC) * 0.597) + (Number(patient.SJC) * -0.808),
-                TR4: (Number(patient.TJC) * 0.619) + (Number(patient.SJC) * -0.359),
+                TR1: (Number(patient.TJC) * 0) + (Number(patient.SJC) * -2.308) + (Number(patient.ESR) * 7.74) + (Number(patient.Leukocytes) * 0.671) + (Number(patient.HB) * 0.432) + (Number(patient.Thrombocytes) * -0.578),
+                
+                TR2: (Number(patient.TJC) * -0.368) + (Number(patient.SJC) * 0.862) + (Number(patient.ESR) * -1.116) + (Number(patient.Leukocytes) * -4.999) + (Number(patient.HB) * 1.396) + (Number(patient.Thrombocytes) * 0),
+                
+                TR3: (Number(patient.TJC) * -0.517) + (Number(patient.SJC) * -0.526) + (Number(patient.ESR) * 0) + (Number(patient.Leukocytes) * 6.269) + (Number(patient.HB) * -1.86) + (Number(patient.Thrombocytes) * 2.642),
+                
+                TR4: (Number(patient.TJC) * 2.348) + (Number(patient.SJC) * 1.988) + (Number(patient.ESR) * -0.983) + (Number(patient.Leukocytes) * -1.809) + (Number(patient.HB) * -0.015) + (Number(patient.Thrombocytes) * -0.464),
             };
             
             // Sla de resultaten op in het geheugen voor later gebruik

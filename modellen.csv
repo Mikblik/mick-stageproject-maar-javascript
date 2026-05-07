@@ -1,25 +1,25 @@
 ModelNaam,Target,TJC,SJC,ESR,Leukocytes,HB,Thrombocytes
-Goud (Alles),L1,-0.777,-1.032,-0.209,-0.516,1.68,-0.004
-Goud (Alles),L2,-0.595,-0.699,0.165,-0.096,0.329,-0.002
-Goud (Alles),L3,-0.569,-0.808,-0.203,1.302,-0.271,0
-Goud (Alles),L4,0.619,0.359,-0.188,-0.204,0.858,-0.004
-Goud (Alles),L5,0.296,0.472,0.087,0.005,-0.1,-0.001
-Goud (Alles),L6,-0.151,0.025,0.329,0.052,-1.364,0.001
-Goud (Alles),L7,0.89,1.475,-0.042,0.108,-0.65,-0.01
-Goud (Alles),L8,0.286,0.208,0.06,-0.65,-0.481,0.02
-Zilver (Geen SJC),L1,-0.95,,-0.25,-0.55,1.70,-0.005
-Zilver (Geen SJC),L2,-0.65,,-0.15,-0.10,0.35,-0.003
-Zilver (Geen SJC),L3,-0.60,,-0.22,1.35,-0.30,0
-Zilver (Geen SJC),L4,0.70,,-0.20,-0.22,0.90,-0.005
-Zilver (Geen SJC),L5,0.35,,0.10,0.01,-0.15,-0.002
-Zilver (Geen SJC),L6,-0.10,,0.35,0.06,-1.40,0.002
-Zilver (Geen SJC),L7,1.10,,-0.05,0.12,-0.70,-0.012
-Zilver (Geen SJC),L8,0.35,,0.08,-0.68,-0.50,0.025
-Brons (Geen SJC en ESR),L1,-1.05,,,-0.60,1.75,-0.006
-Brons (Geen SJC en ESR),L2,-0.75,,,-0.15,0.40,-0.004
-Brons (Geen SJC en ESR),L3,-0.70,,,1.40,-0.35,0
-Brons (Geen SJC en ESR),L4,0.80,,,-0.25,0.95,-0.006
-Brons (Geen SJC en ESR),L5,0.45,,,0.05,-0.20,-0.003
-Brons (Geen SJC en ESR),L6,-0.20,,,0.10,-1.45,0.003
-Brons (Geen SJC en ESR),L7,1.20,,,0.15,-0.75,-0.015
-Brons (Geen SJC en ESR),L8,0.45,,,-0.75,-0.55,0.030
+Model 1 (Alles),L1,-0.779,-1.119,-0.222,-0.626,1.838,-0.003
+Model 1 (Alles),L2,-0.607,-0.742,0.171,-0.082,0.349,-0.002
+Model 1 (Alles),L3,-0.591,-0.853,-0.214,1.385,-0.245,-0.001
+Model 1 (Alles),L4,0.658,0.363,-0.189,-0.204,0.923,-0.006
+Model 1 (Alles),L5,0.312,0.488,0.092,-0.011,-0.106,-0.001
+Model 1 (Alles),L6,-0.192,0.039,0.337,0.135,-1.467,0.002
+Model 1 (Alles),L7,1.010,1.611,-0.043,0.057,-0.753,-0.010
+Model 1 (Alles),L8,0.190,0.212,0.067,-0.655,-0.541,0.021
+Model 2 (Zonder HB),L1,-0.627,-0.961,-0.174,0.444,,0.014
+Model 2 (Zonder HB),L2,-0.480,-0.640,0.170,-0.019,,0
+Model 2 (Zonder HB),L3,-0.525,-0.708,-0.154,0.935,,-0.003
+Model 2 (Zonder HB),L4,0.659,0.485,-0.154,0.127,,0.002
+Model 2 (Zonder HB),L5,0.253,0.406,0.080,-0.055,,-0.004
+Model 2 (Zonder HB),L6,-0.253,0.010,0.247,-0.309,,-0.009
+Model 2 (Zonder HB),L7,0.791,1.200,-0.044,-0.207,,-0.014
+Model 2 (Zonder HB),L8,0.182,0.208,0.029,-0.916,,0.014
+Model 3 (Zonder HB en Thrombocyten),L1,-0.636,-1.147,-0.161,0.933,,
+Model 3 (Zonder HB en Thrombocyten),L2,-0.499,-0.654,0.170,-0.028,,
+Model 3 (Zonder HB en Thrombocyten),L3,-0.654,-0.875,-0.173,0.942,,
+Model 3 (Zonder HB en Thrombocyten),L4,0.694,0.539,-0.149,0.136,,
+Model 3 (Zonder HB en Thrombocyten),L5,0.253,0.437,0.074,-0.201,,
+Model 3 (Zonder HB en Thrombocyten),L6,-0.276,0.017,0.230,-0.556,,
+Model 3 (Zonder HB en Thrombocyten),L7,0.765,1.159,-0.064,-0.562,,
+Model 3 (Zonder HB en Thrombocyten),L8,0.353,0.522,0.072,-0.662,,
