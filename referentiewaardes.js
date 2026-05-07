@@ -10,7 +10,7 @@ const REF_GEM_PER_STADIA = {
     "L8": { TJC: 3.00, SJC: 2.28, ESR: 19.12, Leukocytes: 3.83, HB: 4.21, Thrombocytes: 267.67 }
 };
 
-// placeholder later veranderen
+// placeholder later veranderen // dit was nodig voor de KNN pipeline
 const REFERENTIE_BIBLIOTHEEK = [
     { id: "ref_001", traject: "TR1", sequentie: ["L1", "L1", "L1"] },
     { id: "ref_002", traject: "TR1", sequentie: ["L2", "L1", "L1", "L1"] },
@@ -27,20 +27,19 @@ const REFERENTIE_BIBLIOTHEEK = [
     { id: "ref_010", traject: "TR4", sequentie: ["L7", "L8", "L7", "L8"] }
 ];
 
-// GEM WAARDES TRAJECT PLACEHOLDER
+// gemiddelde waarden per ziektetraject
 const REF_TRAJECT_BASELINE = {
-    "TR1": { 
-        TJC: 2.5, SJC: 1.5, ESR: 10.0, Leukocytes: 5.5, HB: 8.5, Thrombocytes: 240 
-    },
-    "TR2": { 
-        TJC: 5.0, SJC: 3.0, ESR: 18.0, Leukocytes: 6.5, HB: 8.0, Thrombocytes: 260 
-    },
-    "TR3": { 
-        TJC: 8.5, SJC: 6.0, ESR: 30.0, Leukocytes: 8.0, HB: 7.0, Thrombocytes: 300 
-    },
-    "TR4": { 
-        TJC: 14.0, SJC: 11.0, ESR: 45.0, Leukocytes: 9.0, HB: 6.0, Thrombocytes: 380 
-    }
+    // Traject A
+    "TR1": { TJC: 3.71, SJC: 2.96, ESR: 43.89, Leukocytes: 8.29, HB: 7.77, Thrombocytes: 313.65 },
+    
+    // Traject B
+    "TR2": { TJC: 2.86, SJC: 1.96, ESR: 12.31, Leukocytes: 6.60, HB: 8.52, Thrombocytes: 254.82 },
+    
+    // Traject C
+    "TR3": { TJC: 3.34, SJC: 2.45, ESR: 20.75, Leukocytes: 10.22, HB: 8.29, Thrombocytes: 317.43 },
+    
+    // Traject D
+    "TR4": { TJC: 7.26, SJC: 5.58, ESR: 21.18, Leukocytes: 8.13, HB: 8.10, Thrombocytes: 292.88 }
 };
 
 const UITLEG_STADIA = {
@@ -95,36 +94,3 @@ const REF_GRAPH_PER_TRAJECT = {
     }
 };
 
-// ========================================================================
-// DUMMY DATA: Meerdere referentiepatiënten per traject (voor PCA Clustering)
-// ========================================================================
-const REF_TRAJECT_POPULATIE = {
-    "TR1": [
-        { "TJC": 2, "SJC": 1, "ESR": 15, "Leukocytes": 6.5, "HB": 8.5, "Thrombocytes": 250 },
-        { "TJC": 3, "SJC": 1, "ESR": 14, "Leukocytes": 6.2, "HB": 8.7, "Thrombocytes": 240 },
-        { "TJC": 1, "SJC": 2, "ESR": 16, "Leukocytes": 6.8, "HB": 8.3, "Thrombocytes": 260 },
-        { "TJC": 2, "SJC": 0, "ESR": 12, "Leukocytes": 6.0, "HB": 8.9, "Thrombocytes": 230 },
-        { "TJC": 3, "SJC": 2, "ESR": 18, "Leukocytes": 7.0, "HB": 8.1, "Thrombocytes": 270 }
-    ],
-    "TR2": [
-        { "TJC": 5, "SJC": 4, "ESR": 25, "Leukocytes": 7.5, "HB": 8.0, "Thrombocytes": 300 },
-        { "TJC": 6, "SJC": 3, "ESR": 22, "Leukocytes": 7.2, "HB": 8.2, "Thrombocytes": 290 },
-        { "TJC": 4, "SJC": 5, "ESR": 28, "Leukocytes": 7.8, "HB": 7.8, "Thrombocytes": 310 },
-        { "TJC": 5, "SJC": 5, "ESR": 26, "Leukocytes": 7.6, "HB": 7.9, "Thrombocytes": 305 },
-        { "TJC": 7, "SJC": 4, "ESR": 24, "Leukocytes": 7.4, "HB": 8.1, "Thrombocytes": 295 }
-    ],
-    "TR3": [
-        { "TJC": 8, "SJC": 7, "ESR": 40, "Leukocytes": 8.5, "HB": 7.5, "Thrombocytes": 350 },
-        { "TJC": 9, "SJC": 6, "ESR": 38, "Leukocytes": 8.2, "HB": 7.7, "Thrombocytes": 340 },
-        { "TJC": 7, "SJC": 8, "ESR": 43, "Leukocytes": 8.8, "HB": 7.3, "Thrombocytes": 360 },
-        { "TJC": 8, "SJC": 8, "ESR": 41, "Leukocytes": 8.6, "HB": 7.4, "Thrombocytes": 355 },
-        { "TJC": 10, "SJC": 7, "ESR": 39, "Leukocytes": 8.4, "HB": 7.6, "Thrombocytes": 345 }
-    ],
-    "TR4": [
-        { "TJC": 12, "SJC": 10, "ESR": 60, "Leukocytes": 10.0, "HB": 7.0, "Thrombocytes": 450 },
-        { "TJC": 13, "SJC": 9,  "ESR": 58, "Leukocytes": 9.8,  "HB": 7.2, "Thrombocytes": 440 },
-        { "TJC": 11, "SJC": 11, "ESR": 63, "Leukocytes": 10.3, "HB": 6.8, "Thrombocytes": 460 },
-        { "TJC": 12, "SJC": 11, "ESR": 61, "Leukocytes": 10.1, "HB": 6.9, "Thrombocytes": 455 },
-        { "TJC": 14, "SJC": 10, "ESR": 59, "Leukocytes": 9.9,  "HB": 7.1, "Thrombocytes": 445 }
-    ]
-};

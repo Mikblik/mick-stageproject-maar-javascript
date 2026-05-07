@@ -3,7 +3,10 @@ const fs = require('fs');
 // ========================================================================
 // nep test data 
 // ========================================================================
+
+// Dit is nodig voor een nep fetch bestand (nep modellen.csv)
 global.fetch = jest.fn(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve("") }));
+// een nep output van papa parse, omdat de nep csv leeg is en dus niet gelezen kan worden.
 global.Papa = { 
     parse: jest.fn((tekst, opties) => {
         opties.complete({ data: [ { ModelNaam: "TestModel", Target: "L1", TJC: 0.5 } ] });
@@ -20,8 +23,8 @@ window.ApexCharts = global.ApexCharts;
 window.Chart = global.Chart;
 
 // Referentiewaarden voor de wiskunde in grafieken.js
-global.REF_GEM_PER_STADIA = { "L1": { TJC: 5, SJC: 2 } };
-global.REF_TRAJECT_BASELINE = { "TR1": { TJC: 10, SJC: 5 } };
+global.REF_GEM_PER_STADIA = { "L1": { TJC: 0.81, SJC: 0.35, ESR: 8.00, Leukocytes: 6.19, HB: 8.63, Thrombocytes: 244.32 } };
+global.REF_TRAJECT_BASELINE = { "TR1": { TJC: 3.71, SJC: 2.96, ESR: 43.89, Leukocytes: 8.29, HB: 7.77, Thrombocytes: 313.65 } };
 global.REF_GRAPH_PER_TRAJECT = { "TR1": { nodes: { "L1": 1 }, edges: [] } };
 global.UITLEG_TRAJECTEN = { "TR1": "Uitleg over TR1" };
 global.UITLEG_STADIA = { "L1": "Uitleg over L1" };
@@ -91,9 +94,10 @@ beforeEach(() => {
 // ========================================================================
 describe('Hoofdstuk 1: Isolatie Tests voor Alle Grafieken (Smoke Tests)', () => {
     
-    // Jouw standaard data (iets uitgebreid om alle grafieken tevreden te houden)
+    //standaard data
     const standaardPatientLijst = [{ patient_id: 1, visit: 1, ziektestadium: "L1", ziektetraject: "TR1", TJC: 5 }];
 
+    // simpele unit tests die controleren of er geen crash is
     test('1. maakFlexibeleComboGrafiek produceert geen fatale fouten', () => { 
         maakFlexibeleComboGrafiek(standaardPatientLijst, "FeatureLinks", "FeatureRechts"); 
         expect(true).toBe(true); 
@@ -173,18 +177,19 @@ describe('Hoofdstuk 1: Isolatie Tests voor Alle Grafieken (Smoke Tests)', () => 
 // ========================================================================
 describe('Hoofdstuk 2: Deep Tests voor Grafieken en Tabellen', () => {
 
+    // test of het van 0.85 / 0.15 kan veranderen naar 85 / 15
     test('Deep 1: maakKansenGrafiek converteert kommagetallen correct naar percentages (0.85 -> 85%)', () => {
         const patientData = [{ visit: 1, stadiumKansen: { "L1": 0.85, "L2": 0.15 } }];
         
         maakKansenGrafiek(patientData, 1, "Stadium");
         
-        // Vang het configuratie-bestand op dat jouw code naar Chart.js heeft gestuurd
         const chartConfigArgs = global.Chart.mock.calls[0][1];
         
         expect(chartConfigArgs.data.labels).toEqual(["L1", "L2"]);
         expect(chartConfigArgs.data.datasets[0].data).toEqual([85, 15]);
     });
 
+    // test of de id, traject en afstand in de tabel komen en afgerond op 2 decimalen
     test('Deep 2: vulBurenTabel vult daadwerkelijk de HTML tabel in het DOM met de juiste patiënten', () => {
         const knnPatient = [{ 
             knn_buren: [{ id: "Patiënt 99", traject: "TR3", afstand: 1.234 }] 
@@ -197,9 +202,10 @@ describe('Hoofdstuk 2: Deep Tests voor Grafieken en Tabellen', () => {
         
         expect(tabelInhoud).toContain("Patiënt 99");
         expect(tabelInhoud).toContain("TR3");
-        expect(tabelInhoud).toContain("1.23"); // Test de toFixed(2) afronding
+        expect(tabelInhoud).toContain("1.23");
     });
 
+    // test of de vulburentabel de juiste tekst laat zien.
     test('Deep 3: vulPatientSpecifiekeLegenda vertaalt codes (TR1) naar leesbare uitleg', () => {
         const patientData = [{ ziektetraject: "TR1", ziektestadium: "L1" }];
         
@@ -212,6 +218,7 @@ describe('Hoofdstuk 2: Deep Tests voor Grafieken en Tabellen', () => {
         expect(stadiaHTML).toContain("Uitleg over L1");
     });
 
+    // test of de impact tabel de juiste waarde berekent en de originele kan laten zien
     test('Deep 4: maakImpactTabel rekent de impact correct uit (Waarde * Coëfficiënt)', () => {
         const patientData = [{ visit: 1, ziektestadium: "L1", modelGebruikt: "TestModel", TJC: 10 }];
         
@@ -224,18 +231,19 @@ describe('Hoofdstuk 2: Deep Tests voor Grafieken en Tabellen', () => {
         expect(impactHTML).toContain("+5.00");
     });
 
+    // test: TJC heeft 8.1 en de ref is 0.81 dus is de ratio 10x in de heatmap
     test('Deep 5: maakApexHeatmap berekent de juiste ratios ten opzichte van referentiewaardes', () => {
-        const patientData = [{ visit: 1, ziektestadium: "L1", TJC: 15 }];
+        const patientData = [{ visit: 1, ziektestadium: "L1", TJC: 8.1 }];
         
         maakApexHeatmap(patientData);
         
         const apexConfig = global.ApexCharts.mock.calls[0][1];
         const tjcData = apexConfig.series[0].data.find(d => d.x === 'TJC');
         
-        // Referentie TJC voor L1 = 5, Patiënt TJC = 15. Ratio moet zijn: 15 / 5 = 3x
-        expect(tjcData.y).toBe("3.00");
+        expect(tjcData.y).toBe("10.00");
     });
 
+    // testen of het waarschuwingsbericht over missing data wordt laten zien.
     test('Deep 6: schrijfMeldingInCanvas tekent de grijze waarschuwingsberichtjes op het scherm', () => {
         schrijfMeldingInCanvas('ComboGrafiek', 'TEST MELDING');
         
