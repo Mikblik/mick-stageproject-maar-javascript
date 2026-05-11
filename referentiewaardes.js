@@ -43,6 +43,8 @@ const UITLEG_TRAJECTEN = {
     "TR4": "Persistent joint inflammation: High SJC/TJC without rapid improvement. Patients often remain stuck in stage L4 (normal ESR)."
 };
 
+// de overgangen van ziektestadium naar ziektestadium + hoevaak elke ziektestadium voorkomt, 
+// dit is gebruikt voor beide graph projections.
 const REF_GRAPH_PER_TRAJECT = {
     "TR1": {
         "nodes": {
@@ -932,6 +934,8 @@ const REF_GRAPH_PER_TRAJECT = {
     }
 };
 
+// bibliotheek aan patiënten met hun ziektestadium sequentie en bijbehorende ziektetraject,
+// dit wordt gebruikt in de kwt/knn pipeline.
 const REFERENTIE_BIBLIOTHEEK = [
     {
         "id": "ref_001",
