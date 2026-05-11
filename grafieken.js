@@ -503,13 +503,19 @@ function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
     const patiëntFilm = gesorteerdeLijst.map(p => p.ziektestadium).filter(s => s && !s.startsWith("Onbekend"));
 
     const uniekeStadia = Object.keys(trajectRef.nodes);
+    
     const nodeData = uniekeStadia.map(stadiumCode => {
         const isPatiëntInDitStadium = patiëntFilm.includes(stadiumCode);
+        const count = trajectRef.nodes[stadiumCode];
+        
+        const berekendeMarge = 10 + (Math.sqrt(count) * 3);
+        const definitieveMarge = Math.min(berekendeMarge, 35);
+
         return {
             id: stadiumCode,
             label: stadiumCode,
-            shape: 'dot',
-            size: 10 + (trajectRef.nodes[stadiumCode] * 0.2), 
+            shape: 'circle', 
+            margin: definitieveMarge, 
             
             color: {
                 background: isPatiëntInDitStadium ? '#2563EB' : '#E5E7EB', 
@@ -517,7 +523,7 @@ function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
             },
             
             font: { 
-                color: '#111827', 
+                color: isPatiëntInDitStadium ? '#ffffff' : '#4B5563', 
                 face: 'Arial, sans-serif', 
                 size: isPatiëntInDitStadium ? 16 : 14, 
                 bold: isPatiëntInDitStadium
@@ -525,26 +531,30 @@ function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
         };
     });
 
-    const edgeData = trajectRef.edges.map(overgang => {
+    const edgeData = [];
+
+    const MINIMALE_MARKOV_KANS = 15;
+    
+    trajectRef.edges.forEach(overgang => {
         let isPatiëntOvergang = false;
+        
         for (let i = 0; i < patiëntFilm.length - 1; i++) {
             if (patiëntFilm[i] === overgang.from && patiëntFilm[i+1] === overgang.to) {
                 isPatiëntOvergang = true; break;
             }
         }
-        return {
-            from: overgang.from, 
-            to: overgang.to, 
-            
-            arrows: { 
-                to: { enabled: true, scaleFactor: isPatiëntOvergang ? 1.5 : 0.5 } 
-            },
-            
-            color: isPatiëntOvergang ? '#2563EB' : '#D1D5DB', 
-            width: isPatiëntOvergang ? 4 : (1 + (overgang.gewicht * 0.05)),
-            dashes: isPatiëntOvergang ? false : true, 
-            smooth: { type: 'curvedCW', roundness: 0.2 } 
-        };
+        
+        if (isPatiëntOvergang || overgang.gewicht >= MINIMALE_MARKOV_KANS) {
+            edgeData.push({
+                from: overgang.from, 
+                to: overgang.to, 
+                arrows: { to: { enabled: true, scaleFactor: isPatiëntOvergang ? 1.5 : 0.5 } },
+                color: isPatiëntOvergang ? '#2563EB' : '#D1D5DB', 
+                width: isPatiëntOvergang ? 4 : Math.min(1 + (overgang.gewicht * 0.05), 8),
+                dashes: isPatiëntOvergang ? false : true, 
+                smooth: { type: 'curvedCW', roundness: 0.3 } 
+            });
+        }
     });
 
     for (let i = 0; i < patiëntFilm.length - 1; i++) {
@@ -559,40 +569,58 @@ function maakIndividualGraphProjection(patientenLijst, gekozenTrajectRef) {
             edgeData.push({
                 from: fromNode, 
                 to: toNode, 
-                
                 arrows: { to: { enabled: true, scaleFactor: 1.5 } },
-                
                 color: '#EF4444', 
                 width: 4, 
                 dashes: [10, 5], 
-                smooth: { type: 'curvedCW', roundness: 0.4 },
-                
+                smooth: { type: 'dynamic', roundness: 0.5 },
                 font: { align: 'top', color: '#EF4444', size: 12, bold: true, background: 'white' }
             });
         }
     }
 
     const data = { nodes: new vis.DataSet(nodeData), edges: new vis.DataSet(edgeData) };
+    
     const options = {
         edges: {
             smooth: {
                 enabled: true,
                 type: 'curvedCW',
-                roundness: 0.8 
+                roundness: 0.3
             }
         },
-        layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
-        interaction: { dragNodes: true, dragView: true, zoomView: true },
-        physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
+        layout: {
+            hierarchical: false
+        },
+        physics: {
+            enabled: true,
+            solver: 'repulsion',
+            repulsion: {
+                nodeDistance: 250,    
+                centralGravity: 0.05,
+                springLength: 200,  
+                springConstant: 0.05,
+                damping: 0.5         
+            },
+            stabilization: {
+                enabled: true,
+                iterations: 500, 
+                fit: true
+            }
+        },
+        interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true }
     };
 
     individualNetwork = new vis.Network(container, data, options);
+
+    individualNetwork.on("stabilized", function() {
+        individualNetwork.setOptions({ physics: false });
+    });
 
     individualNetwork.once("afterDrawing", function() {
         individualNetwork.fit();
     });
 }
-
 // ==========================================================================
 // 2G. Uitleg tabel voor de gevonden ziektestadia en traject
 // ==========================================================================
@@ -1503,14 +1531,15 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
     const nodeData = Object.keys(nodeTellers).map(stadium => {
         const count = nodeTellers[stadium];
         
-        const padding = 10 + ((count / maxNodeCount) * 25); 
+        const berekendeMarge = 10 + (Math.sqrt(count) * 3);
+        const definitieveMarge = Math.min(berekendeMarge, 35);
 
         return {
             id: stadium,
             label: stadium,
             title: `Stage: ${stadium}<br>Patient Count: ${count}`,
-            shape: 'circle',
-            margin: padding,
+            shape: 'circle',          // Terug naar circle zodat de tekst erin past!
+            margin: definitieveMarge, // De getemde opvulling
             color: {
                 background: '#2563EB', 
                 border: '#1E3A8A'
