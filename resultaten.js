@@ -99,8 +99,28 @@ function initDashboard() {
         console.log("Using Baseline model.");
         baselinemodel(patientenLijst);
     } else if (modelVoorkeur === "traject") {
-        console.log("Using DTW/KNN pipeline.");
-        pipeline_DTW_KNN(patientenLijst);
+        console.log("Using DTW/KNN pipeline (Alleen Traject).");
+        
+        const patientGroepen = {};
+        patientenLijst.forEach(p => {
+            if (!patientGroepen[p.patient_id]) {
+                patientGroepen[p.patient_id] = [];
+            }
+            patientGroepen[p.patient_id].push(p);
+        });
+
+        Object.values(patientGroepen).forEach(bezoekenVanEénPatient => {
+            try {
+                const winnendTraject = pipeline_DTW_KNN(bezoekenVanEénPatient);
+                
+                bezoekenVanEénPatient.forEach(p => {
+                    p.gebruiktTrajectModel = "Traject (DTW/KNN)";
+                    p.ziektetraject = winnendTraject || "Onbekend"; 
+                });
+            } catch (err) {
+                console.error("Crash bij berekenen patiënt:", bezoekenVanEénPatient[0]?.patient_id, err);
+            }
+        });
     } else {
         console.log("Using Combo model (Baseline + DTW/KNN fallback).");
         combomodel(patientenLijst);
