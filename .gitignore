@@ -1,2 +1,5 @@
-markovchain.py
-veilige_referentiewaarden.js
+echte_patient_seq.py
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
