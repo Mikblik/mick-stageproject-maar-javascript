@@ -1500,11 +1500,10 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
         }
     });
 
-    //=======================================================================
     // tabel voor hoeveelheid patienten per stadium en voor elke overgang tussen stadia.
-    console.groupCollapsed(`📊 Populatie Graph Data (Filter: ${trajectFilter})`);
+    console.groupCollapsed(` Populatie Graph Data (Filter: ${trajectFilter})`);
     
-    // Maak een nette array voor de Nodes tabel (gesorteerd van hoog naar laag)
+    // Maak een array voor de Nodes tabel (gesorteerd van hoog naar laag)
     const logNodes = Object.keys(nodeTellers).map(s => ({
         Stadium: s,
         Aantal_Patienten: nodeTellers[s]
@@ -1512,7 +1511,7 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
     console.log("Knooppunten (Nodes):");
     console.table(logNodes);
 
-    // Maak een nette array voor de Edges tabel (gesorteerd van hoog naar laag)
+    // Maak een array voor de Edges tabel (gesorteerd van hoog naar laag)
     const logEdges = Object.values(edgeTellers).map(e => ({
         Van_Stadium: e.from,
         Naar_Stadium: e.to,
@@ -1522,8 +1521,6 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
     console.table(logEdges);
     
     console.groupEnd();
-    // ======================================================================
-
 
     // Nodes (Bollen) genereren
     const maxNodeCount = Math.max(...Object.values(nodeTellers), 1);
@@ -1538,8 +1535,8 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
             id: stadium,
             label: stadium,
             title: `Stage: ${stadium}<br>Patient Count: ${count}`,
-            shape: 'circle',          // Terug naar circle zodat de tekst erin past!
-            margin: definitieveMarge, // De getemde opvulling
+            shape: 'circle',        
+            margin: definitieveMarge, 
             color: {
                 background: '#2563EB', 
                 border: '#1E3A8A'
@@ -1579,13 +1576,38 @@ function maakPopulatieGraphProjection(patientenLijst, trajectFilter = 'ALL') {
             smooth: {
                 enabled: true,
                 type: 'curvedCW',
-                roundness: 0.8 
+                roundness: 0.3
             }
         },
-        layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', nodeSpacing: 100, levelSeparation: 150 } },
-        interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true },
-        physics: { hierarchicalRepulsion: { nodeDistance: 120 } }
+        layout: { 
+            hierarchical: false 
+        },
+        physics: {
+            enabled: true,
+            solver: 'repulsion',
+            repulsion: {
+                nodeDistance: 280,  
+                centralGravity: 0.05,
+                springLength: 220,
+                springConstant: 0.05,
+                damping: 0.5
+            },
+            stabilization: {
+                enabled: true,
+                iterations: 500,
+                fit: true
+            }
+        },
+        interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true }
     };
 
     populatieNetwork = new vis.Network(container, data, options);
+
+    populatieNetwork.on("stabilized", function() {
+        populatieNetwork.setOptions({ physics: false });
+    });
+
+    populatieNetwork.once("afterDrawing", function() {
+        populatieNetwork.fit();
+    });
 }
