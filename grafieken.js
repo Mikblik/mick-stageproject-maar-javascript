@@ -193,7 +193,7 @@ function maakKansenGrafiek(patientData, gekozenVisiteNummer, type) {
         
     } else if (type === 'Traject') {
         if (!visiteData.trajectKansen) {
-            schrijfMeldingInCanvas('KansenGrafiek', "Patient excluded from trajectory model due to missing data.");
+            schrijfMeldingInCanvas('KansenGrafiek', "Can only be used with Baseline Model.");
             return;
         }
         labels = Object.keys(visiteData.trajectKansen).sort();
@@ -464,7 +464,7 @@ function vulBurenTabel(patientenLijst) {
             tabelBody.appendChild(rij);
         });
     } else {
-        meldingVeld.innerText = "This comparison is only available when the KWT/KNN Pipeline is used.";
+        meldingVeld.innerText = "This comparison is only available when the DTW/KNN Pipeline is used.";
         meldingVeld.classList.remove('hidden');
     }
 }
