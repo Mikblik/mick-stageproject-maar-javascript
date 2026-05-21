@@ -92,12 +92,26 @@ function initDashboard() {
 
     // Haal de gekozen trajectstrategie op uit de sessie data (via app.js)
     let modelVoorkeur = sessionStorage.getItem('model_voorkeur');
+    // toon de gekozen strategie in de header van de "all patients" balk
+    const modelStatusAll = document.getElementById('model-status-all');
+    if (modelStatusAll) {
+        let strategieNaam = "Combo Model";
+        // Controleer de voorkeur en zet om naar een nette naam
+        if (modelVoorkeur === "baseline") {
+            strategieNaam = "Baseline Model";
+        } else if (modelVoorkeur === "traject") {
+            strategieNaam = "Traject Model (DTW/KNN)";
+        }
+        
+        modelStatusAll.innerText = `Selected Strategy: ${strategieNaam}`;
+    }
     console.log("Selected model strategy:", modelVoorkeur);
 
     // De juiste trajectstrategie aanroepen
     if (modelVoorkeur === "baseline") {
         console.log("Using Baseline model.");
         baselinemodel(patientenLijst);
+        patientenLijst.forEach(p => p.gebruiktTrajectModel = "Baseline Model");
     } else if (modelVoorkeur === "traject") {
         console.log("Using DTW/KNN pipeline (Alleen Traject).");
         
@@ -150,6 +164,15 @@ function initDashboard() {
         });
         
         console.log("Patient selected:", gekozenpatient);
+
+        // Toon het specifieke model van deze patiënt dynamisch in de balk
+        if (gekozenpatientlijst.length > 0) {
+            const modelStatusIndiv = document.getElementById('model-status-indiv');
+            if (modelStatusIndiv) {
+                const specifiekModel = gekozenpatientlijst[0].gebruiktTrajectModel || gekozenpatientlijst[0].modelGebruikt || "Unknown";
+                modelStatusIndiv.innerText = `Applied Model: ${specifiekModel}`;
+            }
+        }
 
         if (gekozenpatientlijst.length > 0) {
             // 1. Combo Grafiek 

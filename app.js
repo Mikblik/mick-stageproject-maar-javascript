@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Instellingen (Settings Menu)
     const settingsKnop = document.getElementById('settings-knop');
     const settingsDropdown = document.getElementById('settings-dropdown');
-    let geselecteerdeModel = 'auto'; // Standaard model instelling
+    let geselecteerdeModel = sessionStorage.getItem('model_voorkeur') || 'combo'; // Standaard model instelling
     const modelOptieAuto = document.getElementById('model-auto');
     const modelOptieBaseline = document.getElementById('model-baseline');
     const modelOptieTraject = document.getElementById('model-traject');
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     modelOptieAuto.addEventListener('click', (event) => {
-        event.preventDefault(); geselecteerdeModel = 'auto'; settingsDropdown.classList.add('hidden'); 
+        event.preventDefault(); geselecteerdeModel = 'combo'; settingsDropdown.classList.add('hidden'); 
     });
 
     modelOptieBaseline.addEventListener('click', (event) => {
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     modelOptieTraject.addEventListener('click', (event) => {
-        event.preventDefault(); geselecteerdeModel = 'traject'; settingsDropdown.classList.add('hidden');
+        event.preventDefault(); geselecteerdeModel = 'DTW/knn pipeline'; settingsDropdown.classList.add('hidden');
     });
 
     // ==========================================================================
