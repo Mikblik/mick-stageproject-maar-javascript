@@ -186,7 +186,6 @@ function initDashboard() {
     // ========================================================================
     // AUTOCOMPLETE LOGICA
     // ========================================================================
-    
     // Luister naar wat de gebruiker typt in de zoekbalk
     patientinputveld.addEventListener('input', function() {
         const invoer = this.value.toLowerCase();

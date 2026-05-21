@@ -220,7 +220,7 @@ function pipeline_DTW_KNN(patientenLijst) {
     // Pak de 5 beste buren
     const k = 5; 
     const buren = scores.slice(0, k);
-    console.log(`Top ${k} buren:`, buren);
+    console.log(`Top ${k} buren voor ${gesorteerd[0].patient_id}:`, buren);
 
     // Laat de buren 'stemmen' op hun eigen traject
     const stemmen = {};
