@@ -103,7 +103,7 @@ function initDashboard() {
             strategieNaam = "Traject Model (DTW/KNN)";
         }
         
-        modelStatusAll.innerText = `Selected Strategy: ${strategieNaam}`;
+        modelStatusAll.innerText = `Applied Model: ${strategieNaam}`;
     }
     console.log("Selected model strategy:", modelVoorkeur);
 
