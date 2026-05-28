@@ -66,8 +66,64 @@
             </div>
 
             <div class="grid grid-cols-3 gap-8">
+                <!-- Graph Projection vs Reference -->
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 md:col-span-2">
+                    <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
+                            data-title="Graph Projection vs Reference"
+                            data-description="Shows the patient's actual disease stages over time compared to the standard pathway for their assigned trajectory. Larger circles mean more patients in that stage; thicker lines mean a more common transition. The grey line is the reference, the blue/red line is the selected patient's actual progression. The red line is a new route made by the patiënt and the blue line is a route matching the reference.">
+                        ?
+                    </button>
+                    
+                    <div class="extra-info hidden mt-2 mb-4 p-4 bg-blue-900 rounded-lg border border-blue-700 flex-shrink-0"></div>
+
+                    <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
+                        
+                        <div class="flex justify-between items-center mb-2 z-10 flex-shrink-0">
+                            <h3 class="text-md font-bold text-gray-800">Pathway vs Reference</h3>
+                            <select id="select-graph-ref" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
+                                <option value="TR1">Reference TR1</option>
+                                <option value="TR2">Reference TR2</option>
+                                <option value="TR3">Reference TR3</option>
+                                <option value="TR4">Reference TR4</option>
+                            </select>
+                        </div>
+
+                        <div class="flex-1 w-full relative min-h-0 overflow-hidden">
+                            <div id="graphProjectionNetwork" class="absolute inset-0 w-full h-full outline-none"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- begin legenda disease stages / trajectories div -->
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative flex flex-col h-full">
+    
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-10"
+                            data-title="discovered disease stages & trajectories legend"
+                            data-description="A quick overview of the characteristics of the discovered disease stages (L1-L8) and trajectories (TR1-TR4).">
+                        ?
+                    </button>
+                    
+                    <div class="bg-white text-black rounded flex-1 overflow-y-auto p-2">
+                        
+                        <h4 class="font-bold text-sm text-blue-800 mb-2 border-b border-blue-200 pb-1 sticky top-0 bg-white">
+                            Trajectories
+                        </h4>
+                        <table class="w-full text-xs text-left mb-4">
+                            <tbody id="legendaTrajectBody">
+                            </tbody>
+                        </table>
+
+                        <h4 class="font-bold text-sm text-blue-800 mb-2 border-b border-blue-200 pb-1 sticky top-0 bg-white">
+                            Disease Stages
+                        </h4>
+                        <table class="w-full text-xs text-left">
+                            <tbody id="legendaStadiaBody">
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
             <!-- Begin progression & features div -->
-            <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+            <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative md:col-span-2">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Progression & Features"
@@ -176,33 +232,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Graph Projection vs Reference -->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
-                    <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Graph Projection vs Reference"
-                            data-description="Shows the patient's actual disease stages over time compared to the standard pathway for their assigned trajectory. Larger circles mean more patients in that stage; thicker lines mean a more common transition. The grey line is the reference, the blue/red line is the selected patient's actual progression. The red line is a new route made by the patiënt and the blue line is a route matching the reference.">
-                        ?
-                    </button>
-                    
-                    <div class="extra-info hidden mt-2 mb-4 p-4 bg-blue-900 rounded-lg border border-blue-700 flex-shrink-0"></div>
-
-                    <div class="bg-white text-black rounded p-4 h-96 flex flex-col white-box transition-all duration-300 w-full relative">
-                        
-                        <div class="flex justify-between items-center mb-2 z-10 flex-shrink-0">
-                            <h3 class="text-md font-bold text-gray-800">Pathway vs Reference</h3>
-                            <select id="select-graph-ref" class="bg-gray-50 border border-gray-300 text-gray-700 text-xs py-1 px-2 rounded focus:outline-none focus:border-blue-500 cursor-pointer">
-                                <option value="TR1">Reference TR1</option>
-                                <option value="TR2">Reference TR2</option>
-                                <option value="TR3">Reference TR3</option>
-                                <option value="TR4">Reference TR4</option>
-                            </select>
-                        </div>
-
-                        <div class="flex-1 w-full relative min-h-0 overflow-hidden">
-                            <div id="graphProjectionNetwork" class="absolute inset-0 w-full h-full outline-none"></div>
-                        </div>
-                    </div>
-                </div>
+                
                 <!-- begin disease stage heatmap div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
@@ -254,34 +284,7 @@
                         <p id="geenBurenMelding" class="hidden text-center p-6 text-gray-500 italic"></p>
                     </div>
                 </div>
-                <!-- begin legenda disease stages / trajectories div -->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="discovered disease stages & trajectories legend"
-                            data-description="A quick overview of the characteristics of the discovered disease stages (L1-L8) and trajectories (TR1-TR4).">
-                        ?
-                    </button>
-                    
-                    <div class="bg-white text-black rounded h-48 overflow-y-auto p-2">
-                        
-                        <h4 class="font-bold text-sm text-blue-800 mb-2 border-b border-blue-200 pb-1 sticky top-0 bg-white">
-                            Trajectories
-                        </h4>
-                        <table class="w-full text-xs text-left mb-4">
-                            <tbody id="legendaTrajectBody">
-                                </tbody>
-                        </table>
-
-                        <h4 class="font-bold text-sm text-blue-800 mb-2 border-b border-blue-200 pb-1 sticky top-0 bg-white">
-                            Disease Stages
-                        </h4>
-                        <table class="w-full text-xs text-left">
-                            <tbody id="legendaStadiaBody">
-                                </tbody>
-                        </table>
-
-                    </div>
-                </div>
+                
                 <!-- Feature Impact Breakdown div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative col-span-3">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
@@ -349,7 +352,7 @@
             </div>
             <div class="grid grid-cols-3 gap-8">
                 <!-- population graph div-->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10">
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 md:col-span-2">
                     <button class="info-button absolute top-4 right-4 z-20 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Population Graph Projection"
                             data-description="Shows the actual disease pathways of all patients or filtered by trajectory. Larger circles mean more patients in that stage; thicker lines mean a more common transition.">
@@ -376,6 +379,51 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- begin disease stages / trajectory legend div -->
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+    
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-10"
+                            data-title="Population Legend"
+                            data-description="Overview of the definitions of the discovered disease stages and trajectories found in this uploaded population.">
+                        ?
+                    </button>
+                    
+                    <div class="bg-white text-black rounded h-96 overflow-y-auto p-4">
+                        
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Legend</h3>
+
+                        <h4 class="font-bold text-sm text-blue-800 mb-2">Found Trajectories</h4>
+                        <div class="overflow-x-auto mb-6">
+                            <table class="w-full text-left text-sm text-gray-500">
+                                <tbody id="populatieLegendaTrajectBody">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="font-bold text-sm text-blue-800 mb-2">Found Disease Stages</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-500">
+                                <tbody id="populatieLegendaStadiaBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+                <!--Begin PCA div-->
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative md:col-span-2">
+    
+                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-10"
+                            data-title="Spread of New Patients (PCA)"
+                            data-description="Each point is a patient from your uploaded file. Colors indicate the predicted trajectory.">
+                        ?
+                    </button>
+                    
+                    <div class="bg-white text-black rounded p-2 h-96 relative">
+                        <canvas id="PopulatieScatter"></canvas>
+                    </div>
+                </div>
                 <!-- begin population stages heatmap div-->
                 <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20 flex-shrink-0"
@@ -391,35 +439,8 @@
                         <div id="populatieStadiaHeatmapChart" class="w-full h-full"></div>
                     </div>
                 </div>
-                <!-- begin population trajectory heatmap div-->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20"
-                            data-title="Trajectory vs Baseline"
-                            data-description="Shows how the average values of the uploaded patients divided by trajectory, differ from the standard baseline values for each trajectory.">
-                        ?
-                    </button>
-                    
-                    <div class="bg-white text-black rounded p-2 h-96 flex flex-col items-center justify-center white-box transition-all duration-300 w-full relative">
-                        <div id="populatieTrajectHeatmapChart" class="w-full h-full min-h-0"></div>
-                    </div>
-                </div>
-                <!--Begin PCA div-->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Spread of New Patients (PCA)"
-                            data-description="Each point is a patient from your uploaded file. Colors indicate the predicted trajectory.">
-                        ?
-                    </button>
-                    <div class="bg-white text-black rounded p-2 h-64">
-                        <canvas id="PopulatieScatter"></canvas>
-                    </div>
-                </div>
-                <!-- Begin PCA Population vs Reference div -->
-                <!-- MOET NOG GEMAAKT WORDEN DUS-->
-
-
                 <!-- trajectory trend comparison div-->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
+                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative md:col-span-2">
     
                     <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
                             data-title="Trajectory Trend Comparison"
@@ -467,39 +488,27 @@
 
                     </div>
                 </div>
-                <!-- begin disease stages / trajectory legend div -->
-                <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative">
-                    <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold"
-                            data-title="Population Legend"
-                            data-description="Overview of the definitions of the discovered disease stages and trajectories found in this uploaded population.">
-                        ?
-                    </button>
-                    
-                    <div class="bg-white text-black rounded h-auto min-h-[12rem] overflow-y-auto p-4">
+                
                         
-                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Legend</h3>
-
-                        <h4 class="font-bold text-sm text-blue-800 mb-2">Found Trajectories</h4>
-                        <div class="overflow-x-auto mb-6">
-                            <table class="w-full text-left text-sm text-gray-500">
-                                <tbody id="populatieLegendaTrajectBody">
-                                    </tbody>
-                            </table>
-                        </div>
-
-                        <h4 class="font-bold text-sm text-blue-800 mb-2">Found Disease Stages</h4>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm text-gray-500">
-                                <tbody id="populatieLegendaStadiaBody">
-                                    </tbody>
-                            </table>
-                        </div>
-                        
-                    </div>
+        <!-- begin population trajectory heatmap div-->
+            <div class="bg-blue-800 p-6 rounded-lg shadow-xl text-white relative transition-all duration-300 z-10 flex flex-col h-full">
+                <button class="info-button absolute top-4 right-4 bg-blue-600 hover:bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold z-20"
+                        data-title="Trajectory vs Baseline"
+                        data-description="Shows how the average values of the uploaded patients divided by trajectory, differ from the standard baseline values for each trajectory.">
+                    ?
+                </button>
+                
+                <div class="bg-white text-black rounded p-2 flex-1 flex flex-col items-center justify-center white-box transition-all duration-300 w-full relative">
+                    <div id="populatieTrajectHeatmapChart" class="w-full h-full min-h-0"></div>
                 </div>
-                        
             </div>
+        <!-- Begin PCA Population vs Reference div -->
+        <!-- MOET NOG GEMAAKT WORDEN DUS-->
+
+        <!-- Einde van figuren-->
         </div>
+    </div>
+
         <!-- begin Modal (pop up bij de I knop) Div -->
         <div id="info-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-6 hidden z-[100]">
             <div class="bg-blue-800 w-full max-w-[90vw] h-[90vh] rounded-2xl shadow-2xl p-8 relative flex flex-col">

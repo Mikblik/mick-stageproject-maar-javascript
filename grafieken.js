@@ -1326,7 +1326,7 @@ function maakPopulatieTrajectHeatmap(patientenLijst) {
             });
         });
 
-        alleSeries.push({ name: `${traject} (Baseline)`, data: rowData });
+        alleSeries.push({ name: `${traject}`, data: rowData });
     });
 
     const options = {
