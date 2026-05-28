@@ -38,11 +38,6 @@
         </header>
 
         <div class="absolute top-0 right-0 flex space-x-2">
-            <button id="help-knop" class="p-2 text-blue-700 hover:text-blue-500 transition-colors" title="Help & Information">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </button>
             
             <button id="settings-knop" class="p-2 text-blue-700 hover:text-blue-500 transition-colors" title="Model Settings">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -56,6 +51,85 @@
             <a href="#" id="model-auto" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Both models (default)</a>
             <a href="#" id="model-baseline" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Baseline model</a>
             <a href="#" id="model-traject" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">DTW/KNN pipeline</a>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-xl p-6 shadow-xl text-white mb-8 space-y-6">
+
+            <div class="flex items-start space-x-4">
+                <div class="bg-blue-600 p-3 rounded-lg hidden sm:block shadow-md flex-shrink-0">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h1 class="text-2xl font-bold mb-2 tracking-wide text-white">RA Trajectory Predictor</h1>
+                    <p class="text-blue-100 text-sm leading-relaxed max-w-5xl">
+                        Welcome to the RA Trajectory Predictor. This tool helps to track how Rheumatoid Arthritis develops over time. After you load your data, you can look at the results in two different ways:
+                    </p>
+                    <ul class="list-disc list-inside text-xs text-blue-200 mt-2 space-y-1 ml-1">
+                        <li><strong class="text-white">Single Patient View:</strong> Look closely at one specific patient. You can see their test results over time, check the charts, and see the top 5 most similar historical patients.</li>
+                        <li><strong class="text-white">All Patients View:</strong> Look at all patients together. It shows a map of how groups of patients move from one disease stage to another.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6 border-t border-blue-800/60">
+                
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-blue-950/40 border border-blue-900/60 rounded-lg p-4">
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 mb-2">8 Disease Stages (L1 - L8)</h2>
+                            <p class="text-xs text-blue-100 leading-relaxed">
+                                Each visit of a patient represents a single moment in time. Based on the lab results of that specific visit, the tool calculates one of the 8 disease stages (L1 to L8).
+                            </p>
+                        </div>
+                        
+                        <div class="bg-blue-950/40 border border-blue-900/60 rounded-lg p-4">
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 mb-2">4 Trajectories (TR1 - TR4)</h2>
+                            <p class="text-xs text-blue-100 leading-relaxed">
+                                When a patient has multiple visits over time, these stages form a path. The tool uses this timeline to predict one of the 4 disease trajectories (TR1 to TR4).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-900/20 border border-blue-800/40 rounded-lg p-4">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 mb-1.5">Two Ways to Enter Data</h2>
+                        <p class="text-xs text-blue-100 leading-relaxed">
+                            You can upload a <strong class="text-white">CSV file</strong> to look at a large group of patients at the same time, or you can use the <strong class="text-white">Manual Input form</strong> below to check a single patient right now. You can change the calculation settings at the top right (⚙).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-blue-900/50 rounded-xl p-4 flex flex-col justify-between space-y-4">
+                    
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-400 block mb-2">Documentation</span>
+                        <p class="text-xs text-blue-200 leading-normal mb-3">
+                            The models, disease stages and disease trajectories used in this tool are based on the following scientific paper:
+                        </p>
+                        <div class="border-l-2 border-emerald-500 pl-3 bg-blue-950/40 py-2 rounded-r">
+                            <a href="https://www.sciencedirect.com/science/article/pii/S0003496725009008" 
+                            target="_blank" 
+                            class="text-xs font-medium text-emerald-400 hover:text-emerald-300 underline transition duration-150 ease-in-out block leading-snug">
+                                "Time-independent disease state identification defines distinct trajectories determined by localised vs systemic inflammation in patients with early rheumatoid arthritis" 
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <a href="data:text/csv;charset=utf-8,Patient%3BVisite%3BTJC28%3BSJC28%3BESR%3BLeukocyten%3BHB%20(adj.)%3BTrombocyten%0A613960689%3B1%3B14%3B8%3B42%3B9.0%3B12.0%3B365%0A613960689%3B2%3B11%3B6%3B35%3B8.0%3B13.0%3B310" 
+                        download="ra_patient_upload_template.csv" 
+                        class="inline-flex items-center justify-center w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 px-4 rounded transition duration-150 ease-in-out shadow-sm group">
+                            <svg class="w-4 h-4 mr-2 text-emerald-100 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Download CSV Template
+                        </a>
+                    </div>
+
+                </div>
+            </div>
         </div>
 
         <div class="flex items-start justify-center space-x-8">
@@ -149,45 +223,6 @@
             </div>
 
         </div> 
-        
-        <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-[100] p-4 transition-opacity duration-300">
-            <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 relative">
-                
-                <button id="close-help-btn" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-                
-                <h2 class="text-2xl font-bold text-blue-900 mb-4">Help & Information</h2>
-                <p class="text-gray-700 mb-6 text-sm">
-                    Welcome to the RA Trajectory Predictor. You can upload a dataset (CSV) containing multiple patients,
-                    or fill in the values of a single patient manually.
-                    The avaible algorithms that could be used on the patiënts can be selected on the top right side of the page by clicking on the gear.
-                </p>
-                
-
-                <div class="mb-6">
-                    <h3 class="font-bold text-gray-800 border-b border-gray-200 pb-1 mb-2">Documentation</h3>
-                    <p class="text-xs text-gray-500 mb-2">The algorithms that are used within this tool are based on the following paper.</p>
-                    
-                    <a href="https://www.sciencedirect.com/science/article/pii/S0003496725009008?via%3Dihub" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center text-sm font-medium">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        Time-independent disease state identification defines distinct trajectories determined by localised vs systemic inflammation in patients with early rheumatoid arthritis
-
-                    </a>
-                </div>
-                
-                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <h3 class="font-bold text-blue-900 mb-1">CSV Template</h3>
-                    <p class="text-xs text-blue-800 mb-4">To successfully process a population, your file must contain the correct column names (e.g. <i>patient_id, visit, TJC, SJC</i>). Download our empty template below.</p>
-                    
-                    <a href="EmptyPatiëntTemplate.csv" download class="w-full justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded shadow text-sm flex items-center transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        Download Excel/CSV Template
-                    </a>
-                </div>
-
-            </div>
-        </div>
 
     </div> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
