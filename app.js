@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sessionStorage.setItem('data_loaded', 'true');
                     sessionStorage.setItem('model_voorkeur', geselecteerdeModel);
                     
+                    sessionStorage.setItem('navigatie_doel', 'all');
                     // Ga naar resultaten pagina
                     window.location.href = 'resultaten.html';
 
@@ -233,6 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('data_loaded', 'true');
         sessionStorage.setItem('model_voorkeur', geselecteerdeModel);
 
+        sessionStorage.setItem('navigatie_doel', 'single');
+
         window.location.href = 'resultaten.html'; 
     }
 
@@ -247,11 +250,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             navPatient.addEventListener('click', (event) => {
                 event.preventDefault(); 
+                sessionStorage.setItem('navigatie_doel', 'single'); 
                 window.location.href = 'resultaten.html';
             });
             
             navAllPatients.addEventListener('click', (event) => {
                 event.preventDefault(); 
+                sessionStorage.setItem('navigatie_doel', 'all');
                 window.location.href = 'resultaten.html';
             });
         }

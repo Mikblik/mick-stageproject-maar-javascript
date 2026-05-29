@@ -33,6 +33,7 @@ function initDashboard() {
 
     const dataRapport = evalueerDataKwaliteit(patientenLijst);
     toonDataKwaliteitMelding(dataRapport);
+    
 
     // ========================================================================
     // 2. DOM ELEMENTEN OPSLAAN (Voor snellere toegang)
@@ -73,10 +74,15 @@ function initDashboard() {
     // ========================================================================
     // 3. PAGINA ROUTING (Welke view moet er openen?)
     // ========================================================================
-    if (patientenLijst.length === 1) {
+    const navigatieDoel = sessionStorage.getItem('navigatie_doel');
+
+    if (navigatieDoel === 'single') {
         individueleView.classList.remove('hidden');
-    } else {
+        console.log("Navigeren naar: Single Patient View");
+        
+    } else if (navigatieDoel === 'all') {
         allePatientenView.classList.remove('hidden');
+        console.log("Navigeren naar: All Patients View");
     }
 
     // ========================================================================
