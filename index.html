@@ -89,9 +89,9 @@
                             <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 mb-2">4 Trajectories (TR1 - TR4)</h2>
                             <p class="text-xs text-blue-100 leading-relaxed">
                                 When a patient has multiple visits over time, these stages form a path. The tool uses this timeline to predict one of the 4 disease trajectories.<br>
-                                <strong class="text-white">TR1:</strong> High ESR at start/end, ending in DS2<br>
-                                <strong class="text-white">TR2:</strong> High initial SJC/TJC, quick progression to DS1<br>
-                                <strong class="text-white">TR3:</strong> Transition/ending in high leukocyte DS3<br>
+                                <strong class="text-white">TR1:</strong> High ESR at start/end<br>
+                                <strong class="text-white">TR2:</strong> High initial SJC/TJC1<br>
+                                <strong class="text-white">TR3:</strong> Transition/ending in high leukocyte<br>
                                 <strong class="text-white">TR4:</strong> High SJC/TJC, poor prognosis
  
                             </p>
@@ -99,9 +99,10 @@
                     </div>
 
                     <div class="bg-blue-900/20 border border-blue-800/40 rounded-lg p-4">
-                        <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 mb-1.5">Two Ways to Enter Data</h2>
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 mb-1.5">Multiple ways to enter and use data</h2>
                         <p class="text-xs text-blue-100 leading-relaxed">
                             You can upload a <strong class="text-white">CSV file</strong> to look at a large group of patients at the same time, or you can use the <strong class="text-white">Manual Input form</strong> below to check a single patient right now. You can change the calculation settings at the top right (⚙).
+                            The calculation options are; <strong class="text-white">Baseline model</strong> which only uses the baseline values of the patient, <strong class="text-white">DTW/KNN pipeline</strong> which uses all the data from the patient and compares it to a database and <strong class="text-white">combo model</strong> which uses either baseline or the pipeline depending on the amount of data given per patient.
                         </p>
                     </div>
                 </div>
