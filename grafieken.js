@@ -1106,7 +1106,7 @@ function maakPopulatieScatter(patientenLijst) {
                 responsive: true, 
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'PCA Clustering (Z-score Normalized)' },
+                    title: { display: true, text: 'PCA Clustering' },
                     legend: { position: 'top' },
                     tooltip: {
                         callbacks: {
