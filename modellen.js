@@ -121,13 +121,13 @@ function baselinemodel(patientenLijst) {
         } else {
             // GOEDGEKEURD! Bereken Baseline scores
             const resultaten = {
-                TR1: (Number(patient.TJC) * 0) + (Number(patient.SJC) * -2.308) + (Number(patient.ESR) * 7.74) + (Number(patient.Leukocytes) * 0.671) + (Number(patient.HB) * 0.432) + (Number(patient.Thrombocytes) * -0.578),
+                TR1: (Number(patient.TJC) * -0.025) + (Number(patient.SJC) * -0.1) + (Number(patient.ESR) * 0.047) + (Number(patient.Leukocytes) * 0.027) + (Number(patient.HB) * -0.018) + (Number(patient.Thrombocytes) * -0.002),
                 
-                TR2: (Number(patient.TJC) * -0.368) + (Number(patient.SJC) * 0.862) + (Number(patient.ESR) * -1.116) + (Number(patient.Leukocytes) * -4.999) + (Number(patient.HB) * 1.396) + (Number(patient.Thrombocytes) * 0),
+                TR2: (Number(patient.TJC) * -0.02) + (Number(patient.SJC) * 0.047) + (Number(patient.ESR) * -0.015) + (Number(patient.Leukocytes) * -0.239) + (Number(patient.HB) * 0.312) + (Number(patient.Thrombocytes) * 0),
                 
-                TR3: (Number(patient.TJC) * -0.517) + (Number(patient.SJC) * -0.526) + (Number(patient.ESR) * 0) + (Number(patient.Leukocytes) * 6.269) + (Number(patient.HB) * -1.86) + (Number(patient.Thrombocytes) * 2.642),
+                TR3: (Number(patient.TJC) * -0.029) + (Number(patient.SJC) * -0.031) + (Number(patient.ESR) * -0.012) + (Number(patient.Leukocytes) * 0.285) + (Number(patient.HB) * -0.286) + (Number(patient.Thrombocytes) * 0.002),
                 
-                TR4: (Number(patient.TJC) * 2.348) + (Number(patient.SJC) * 1.988) + (Number(patient.ESR) * -0.983) + (Number(patient.Leukocytes) * -1.809) + (Number(patient.HB) * -0.015) + (Number(patient.Thrombocytes) * -0.464),
+                TR4: (Number(patient.TJC) * 0.076) + (Number(patient.SJC) * 0.084) + (Number(patient.ESR) * -0.019) + (Number(patient.Leukocytes) * -0.073) + (Number(patient.HB) * -0.007) + (Number(patient.Thrombocytes) * 0),
             };
             
             // Sla de resultaten op in het geheugen voor later gebruik
